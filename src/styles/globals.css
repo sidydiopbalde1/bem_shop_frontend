@@ -1,19 +1,7 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* ── Tailwind v4 theme tokens ───────────────────────────── */
-@theme {
-  --color-bem-red:      #CC1F27;
-  --color-bem-red-dark: #A5181F;
-  --color-bem-black:    #0D0D0D;
-  --color-bem-gray-50:  #F7F6F4;
-  --color-bem-gray-100: #EEECE9;
-  --color-bem-gray-400: #9A9890;
-  --color-bem-gray-700: #4A4845;
-  --font-sans:    var(--font-dm-sans), sans-serif;
-  --font-display: var(--font-playfair), serif;
-}
-
-/* ── CSS variables (used in inline styles) ──────────────── */
 :root {
   --bem-red:      #CC1F27;
   --bem-red-dark: #A5181F;
@@ -30,10 +18,9 @@ body {
   -webkit-font-smoothing: antialiased;
   color: var(--bem-black);
   background: #fff;
-  font-family: var(--font-dm-sans), sans-serif;
 }
 
-/* ─── Navbar ────────────────────────────────────────────── */
+/* ─── Navbar ───────────────────────────────────────────── */
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-14px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -42,6 +29,7 @@ body {
   animation: slideDown 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Nav link underline */
 .nav-link {
   position: relative;
   padding-bottom: 2px;
@@ -57,6 +45,7 @@ body {
 .nav-link:hover { color: var(--bem-red) !important; }
 .nav-link:hover::after { width: 100%; }
 
+/* Icon buttons */
 .icon-btn {
   display: flex; align-items: center;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -66,7 +55,7 @@ body {
   transform: scale(1.1);
 }
 
-/* ─── Marquee ────────────────────────────────────────────── */
+/* ─── Marquee ───────────────────────────────────────────── */
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -77,7 +66,7 @@ body {
 }
 .marquee-track:hover { animation-play-state: paused; }
 
-/* ─── Hero CTA ───────────────────────────────────────────── */
+/* ─── Hero CTA ──────────────────────────────────────────── */
 .hero-cta {
   position: relative; overflow: hidden;
   display: inline-flex; align-items: center;
@@ -107,7 +96,7 @@ body {
   animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ─── Product card ───────────────────────────────────────── */
+/* ─── Product card ──────────────────────────────────────── */
 .product-card { transition: transform 0.25s ease; }
 .product-card:hover { transform: translateY(-4px); }
 .product-card img {
@@ -115,7 +104,7 @@ body {
 }
 .product-card:hover img { transform: scale(1.07); }
 
-/* ─── Product detail layout ──────────────────────────────── */
+/* ─── Product detail layout ─────────────────────────────── */
 .product-layout {
   display: grid;
   grid-template-columns: 1fr;
@@ -129,38 +118,18 @@ body {
   }
 }
 
+/* ─── Product detail image ───────────────────────────────── */
 .product-detail-img img {
   transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .product-detail-img:hover img { transform: scale(1.04); }
 
-.thumb-img { transition: border-color 0.2s; }
-.thumb-img:hover { border-color: var(--bem-black) !important; }
-
-/* ─── Gallery arrows ─────────────────────────────────────── */
-.gallery-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.88);
-  border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  color: var(--bem-black);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  backdrop-filter: blur(4px);
-  z-index: 2;
+/* Thumbnail hover */
+.thumb-img:hover {
+  border-color: var(--bem-black) !important;
 }
-.gallery-arrow:hover {
-  background: #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-}
-.gallery-arrow:active { transform: translateY(-50%) scale(0.92); }
 
-/* ─── Product info slide-in ──────────────────────────────── */
+/* ─── Product info panel slide-in ────────────────────────── */
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(24px); }
   to   { opacity: 1; transform: translateX(0); }
@@ -175,8 +144,11 @@ body {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 24px rgba(0,0,0,0.2) !important;
 }
-.cart-btn:not(:disabled):active { transform: scale(0.97) !important; }
+.cart-btn:not(:disabled):active {
+  transform: scale(0.97) !important;
+}
 
+/* Red fill on hover */
 .cart-fill {
   position: absolute; inset: 0;
   background: var(--bem-red);
@@ -185,9 +157,14 @@ body {
   z-index: 0;
   display: block;
 }
-.cart-btn:not(:disabled):hover .cart-fill { transform: translateY(0); }
+.cart-btn:not(:disabled):hover .cart-fill {
+  transform: translateY(0);
+}
 
-.qty-btn:hover:not(:disabled) { background: var(--bem-gray-100) !important; }
+/* Quantity button hover */
+.qty-btn:hover:not(:disabled) {
+  background: var(--bem-gray-100) !important;
+}
 
 /* ─── Spinner ────────────────────────────────────────────── */
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -200,13 +177,6 @@ body {
   animation: spin 0.7s linear infinite;
 }
 
-/* ─── Cart badge pop ─────────────────────────────────────── */
-@keyframes badgePop {
-  0%   { transform: scale(0); opacity: 0; }
-  70%  { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(1);   opacity: 1; }
-}
-
 /* ─── Checkmark pop ──────────────────────────────────────── */
 @keyframes checkPop {
   0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
@@ -214,48 +184,7 @@ body {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-/* ─── Cart page layout ───────────────────────────────────── */
-.cart-page-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-}
-@media (min-width: 768px) {
-  .cart-page-layout {
-    grid-template-columns: 1fr 340px;
-    gap: 2.5rem;
-    align-items: start;
-  }
-}
-
-/* Cart item hover */
-.cart-item-row {
-  transition: box-shadow 0.2s ease;
-}
-.cart-item-row:hover {
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-}
-
-/* Order summary sticky on scroll */
-@media (min-width: 768px) {
-  .order-summary {
-    position: sticky;
-    top: 90px;
-  }
-}
-
-/* Skeleton shimmer */
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
-.skeleton-row {
-  background: linear-gradient(90deg, #e8e8e8 25%, #f2f2f2 50%, #e8e8e8 75%);
-  background-size: 800px 100%;
-  animation: shimmer 0.9s ease-in-out infinite;
-}
-
-/* ─── Scrollbar ──────────────────────────────────────────── */
+/* ─── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--bem-gray-100); border-radius: 99px; }
