@@ -1,4 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+
+const FOOTER_LINKS = [
+  { label: 'Catalogue',  href: '/catalogue' },
+  { label: 'À propos',   href: '/a-propos' },
+  { label: 'Contact',    href: '/contact' },
+  { label: 'Mon compte', href: '/compte' },
+];
 
 const VALUES = [
   {
@@ -73,9 +82,16 @@ export default function Footer() {
           }}
         >
           <span style={{ fontSize: '0.75rem', color: 'var(--bem-gray-400)' }}>© 2026 BEM DAKAR GOODIES</span>
-          <Link href="/politique" style={{ fontSize: '0.75rem', color: 'var(--bem-gray-400)' }}>
-            Terms and Policies
-          </Link>
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+            {FOOTER_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} style={{ fontSize: '0.75rem', color: 'var(--bem-gray-400)', textDecoration: 'none', transition: 'color 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--bem-black)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--bem-gray-400)')}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
           <div style={{ display: 'flex', gap: '1rem', color: 'var(--bem-gray-400)' }}>
             <a href="#" aria-label="Facebook">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CartItem } from '@/lib/types/shop.types';
 import { useCart } from '@/lib/CartContext';
+import { useAuth } from '@/lib/AuthContext';
 import { bearerHeader } from '@/lib/auth';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -382,6 +383,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
 export default function PanierPage() {
   const router = useRouter();
   const { items, ready, removeItem, updateQty, clearCart } = useCart();
+  const { user } = useAuth();
   const [removing, setRemoving]       = useState<Set<string>>(new Set());
   const [checkoutLoading, setLoading] = useState(false);
   const [checkoutError, setError]     = useState<string | null>(null);
@@ -395,12 +397,17 @@ export default function PanierPage() {
     }, 260);
   }
 
-  async function handleCheckout() {
+  const handleCheckout = useCallback(async () => {
     setError(null);
     setLoading(true);
     try {
       const headers = bearerHeader();
-      if (!headers.Authorization) { router.push('/compte'); return; }
+      if (!headers.Authorization) {
+        sessionStorage.setItem('redirect_after_login', '/panier');
+        sessionStorage.setItem('checkout_pending', 'true');
+        router.push('/compte');
+        return;
+      }
 
       const res = await fetch(`${API}/orders`, {
         method: 'POST',
@@ -412,7 +419,12 @@ export default function PanierPage() {
         }),
       });
 
-      if (res.status === 401) { router.push('/compte'); return; }
+      if (res.status === 401) {
+        sessionStorage.setItem('redirect_after_login', '/panier');
+        sessionStorage.setItem('checkout_pending', 'true');
+        router.push('/compte');
+        return;
+      }
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         setError(d.message ?? 'Une erreur est survenue.');
@@ -426,7 +438,17 @@ export default function PanierPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [items, clearCart, router]);
+
+  /* Auto-déclenche le checkout si l'utilisateur vient de se connecter */
+  useEffect(() => {
+    if (!ready || !user || items.length === 0) return;
+    const pending = sessionStorage.getItem('checkout_pending');
+    if (pending === 'true') {
+      sessionStorage.removeItem('checkout_pending');
+      handleCheckout();
+    }
+  }, [ready, user, items.length, handleCheckout]);
 
   const subtotal = items.reduce((s, i) => {
     const p = typeof i.product.price === 'string' ? parseFloat(i.product.price) : i.product.price;

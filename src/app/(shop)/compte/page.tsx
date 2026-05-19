@@ -665,8 +665,15 @@ export default function ComptePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && user?.role === 'ADMIN') {
+    if (loading || !user) return;
+    if (user.role === 'ADMIN') {
       router.replace('/admin/analytics');
+      return;
+    }
+    const redirect = sessionStorage.getItem('redirect_after_login');
+    if (redirect) {
+      sessionStorage.removeItem('redirect_after_login');
+      router.replace(redirect);
     }
   }, [user, loading, router]);
 

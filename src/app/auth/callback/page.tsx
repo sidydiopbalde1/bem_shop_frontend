@@ -1,30 +1,42 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { tokenStorage } from '@/lib/auth';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 function CallbackHandler() {
-  const router = useRouter();
   const params = useSearchParams();
 
   useEffect(() => {
     const access  = params.get('access');
     const refresh = params.get('refresh');
+
+    function navigate(dest: string) {
+      // Rechargement complet indispensable : router.replace() est client-side
+      // et ne re-monte pas AuthContext, donc le token ne serait pas lu.
+      window.location.href = dest;
+    }
+
     if (access && refresh) {
       tokenStorage.set(access, refresh);
       fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${access}` } })
         .then((r) => r.ok ? r.json() : null)
         .then((user) => {
-          router.replace(user?.role === 'ADMIN' ? '/admin/analytics' : '/compte');
+          if (user?.role === 'ADMIN') {
+            navigate('/admin/analytics');
+          } else {
+            const redirect = sessionStorage.getItem('redirect_after_login') ?? '/compte';
+            sessionStorage.removeItem('redirect_after_login');
+            navigate(redirect);
+          }
         })
-        .catch(() => router.replace('/compte'));
+        .catch(() => navigate('/compte'));
     } else {
-      router.replace('/compte');
+      navigate('/compte');
     }
-  }, [params, router]);
+  }, [params]);
 
   return (
     <div style={{
