@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+
 const SUBJECTS = [
   'Commande & livraison',
   'Retour & échange',
@@ -136,10 +138,22 @@ export default function ContactPage() {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    // Simule un envoi — à connecter à un endpoint backend le moment venu
-    await new Promise((r) => setTimeout(r, 1200));
-    setBusy(false);
-    setSent(true);
+    try {
+      const res = await fetch(`${API}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message ?? 'Une erreur est survenue.');
+      }
+      setSent(true);
+    } catch (err: any) {
+      setError(err.message ?? 'Une erreur est survenue.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
