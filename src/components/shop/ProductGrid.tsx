@@ -8,6 +8,14 @@ type Props = {
   columns?: 2 | 3 | 4 | 5 | 6;
 };
 
+const gridClassMap: Record<number, string> = {
+  2: 'product-grid-cols-2',
+  3: 'product-grid-cols-3',
+  4: 'product-grid-cols-4',
+  5: 'product-grid-cols-5',
+  6: 'product-grid-cols-6',
+};
+
 export default function ProductGrid({ products, columns = 4 }: Props) {
   if (products.length === 0) {
     return (
@@ -18,11 +26,7 @@ export default function ProductGrid({ products, columns = 4 }: Props) {
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-      gap: '24px',
-    }}>
+    <div className={gridClassMap[columns] ?? 'product-grid-cols-4'}>
       {products.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}

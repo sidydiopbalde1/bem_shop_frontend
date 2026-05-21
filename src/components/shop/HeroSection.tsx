@@ -99,7 +99,7 @@ export default function HeroSection() {
                     >
                       <Link
                         href={slide.link}
-                        className="group/btn relative inline-flex items-center justify-center bg-white text-black text-sm font-semibold px-10 py-4 rounded-full overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105"
+                        className="group/btn relative inline-flex items-center justify-center bg-white text-black text-base md:text-lg font-semibold px-36 py-10 rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105"
                       >
                         <span className="relative z-10 transition-colors duration-300 group-hover/btn:text-white">
                           {slide.cta}

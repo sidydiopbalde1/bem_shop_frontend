@@ -131,21 +131,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           onClick={() => setSidebarOpen(false)}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-            zIndex: 40, display: 'block',
+            zIndex: 40,
           }}
           className="lg:hidden"
         />
       )}
 
       {/* ── Sidebar ── */}
-      <aside style={{
-        width: 240, flexShrink: 0,
-        background: 'var(--bem-black)',
-        display: 'flex', flexDirection: 'column',
-        position: 'sticky', top: 0,
-        height: 'calc(100vh - 0px)',
-        overflowY: 'auto',
-      }}>
+      <aside className={`admin-sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         {/* Brand */}
         <div style={{ padding: '28px 24px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -178,7 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }}>Navigation</p>
 
           {NAV.map((item) => {
-            const active = pathname === item.href;
+            const active = pathname === item.href || pathname.startsWith(item.href + '/');
             const badge = item.href === '/admin/messages' && unreadCount > 0 ? unreadCount : 0;
             return (
               <div key={item.href} style={{ marginBottom: 2 }}>
@@ -319,6 +312,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── Main content ── */}
       <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
+        {/* Mobile top bar */}
+        <div className="admin-mobile-header">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Ouvrir le menu"
+            style={{
+              width: 38, height: 38, borderRadius: 8, border: '1.5px solid var(--bem-gray-100)',
+              background: '#fff', cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5,
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ width: 16, height: 1.5, background: 'var(--bem-black)', borderRadius: 99 }} />
+            <span style={{ width: 16, height: 1.5, background: 'var(--bem-black)', borderRadius: 99 }} />
+            <span style={{ width: 16, height: 1.5, background: 'var(--bem-black)', borderRadius: 99 }} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              width: 26, height: 26, borderRadius: 6,
+              background: 'var(--bem-red)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--bem-black)' }}>BEM Admin</p>
+          </div>
+        </div>
         {children}
       </div>
 

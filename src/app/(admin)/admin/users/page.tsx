@@ -176,7 +176,7 @@ export default function UsersPage() {
   const tabRoles: (Role | 'ALL')[] = ['ALL', ...ROLES];
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100%' }}>
+    <div className="admin-content">
 
       <Appear>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>

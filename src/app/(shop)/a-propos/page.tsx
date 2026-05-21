@@ -84,10 +84,11 @@ export default function AProposPage() {
       {/* ── Hero ─────────────────────────────────────────────── */}
       <div style={{
         background: 'linear-gradient(135deg, var(--bem-black) 0%, #1a0a0b 60%, #2d0608 100%)',
-        padding: '100px 48px 80px',
         position: 'relative',
         overflow: 'hidden',
-      }}>
+      }}
+        className="section-pad"
+      >
         {/* Decorative circles */}
         <div style={{ position: 'absolute', top: -80, right: -80, width: 400, height: 400, borderRadius: '50%', background: 'rgba(204,31,39,0.08)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: -60, left: -60, width: 280, height: 280, borderRadius: '50%', background: 'rgba(204,31,39,0.05)', pointerEvents: 'none' }} />
@@ -121,10 +122,9 @@ export default function AProposPage() {
 
       {/* ── Stats ────────────────────────────────────────────── */}
       <div style={{ background: 'var(--bem-gray-50)', borderBottom: '1px solid var(--bem-gray-100)' }}>
-        <div style={{
-          maxWidth: '1200px', margin: '0 auto', padding: '48px',
+        <div className="bem-container section-pad" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
           gap: 32, textAlign: 'center',
         }}>
           {STATS.map((s) => (
@@ -147,7 +147,7 @@ export default function AProposPage() {
       </div>
 
       {/* ── Mission ──────────────────────────────────────────── */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 48px' }}>
+      <div className="bem-container section-pad">
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
@@ -221,8 +221,8 @@ export default function AProposPage() {
       </div>
 
       {/* ── Values ───────────────────────────────────────────── */}
-      <div style={{ background: 'var(--bem-gray-50)', padding: '80px 48px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ background: 'var(--bem-gray-50)' }} className="section-pad">
+        <div className="bem-container" style={{ padding: 0 }}>
           <div style={{ textAlign: 'center', marginBottom: 52 }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 10 }}>
               Ce qui nous guide
@@ -269,7 +269,7 @@ export default function AProposPage() {
       </div>
 
       {/* ── Timeline ─────────────────────────────────────────── */}
-      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '80px 48px' }}>
+      <div className="bem-container section-pad" style={{ maxWidth: '860px' }}>
         <div style={{ textAlign: 'center', marginBottom: 52 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 10 }}>
             Notre parcours
@@ -328,14 +328,16 @@ export default function AProposPage() {
       </div>
 
       {/* ── CTA ──────────────────────────────────────────────── */}
-      <div style={{ padding: '0 48px 80px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="bem-container" style={{ paddingBottom: 80 }}>
         <div style={{
           background: 'linear-gradient(120deg, var(--bem-black) 0%, #1a1a2e 100%)',
-          borderRadius: 20, padding: '56px 48px',
+          borderRadius: 20,
           display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', gap: 32, flexWrap: 'wrap',
           position: 'relative', overflow: 'hidden',
-        }}>
+        }}
+          className="promo-banner"
+        >
           <div style={{ position: 'absolute', top: -50, right: -50, width: 220, height: 220, borderRadius: '50%', background: 'rgba(204,31,39,0.12)', pointerEvents: 'none' }} />
           <div>
             <h2 style={{

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { bearerHeader } from '@/lib/auth';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -9,12 +10,18 @@ type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLE
 
 type Order = {
   id: string;
-  email: string;
   status: OrderStatus;
-  amount: number;
-  provider: string;
-  payment_status: string;
-  created_at: string;
+  totalAmount: number;
+  createdAt: string;
+  user: { id: string; email: string; firstName?: string; lastName?: string };
+  payment?: { provider: string; status: string; amount: number } | null;
+};
+
+type ApiResponse = {
+  data: Order[];
+  total: number;
+  page: number;
+  totalPages: number;
 };
 
 const STATUS_LIST: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
@@ -35,27 +42,6 @@ function fmtAmount(n: number) {
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function parseCSV(text: string): Order[] {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const rows = lines.slice(1);
-  return rows
-    .filter((line) => line.trim())
-    .map((line) => {
-      const cols = line.split(',');
-      return {
-        id:             cols[0]?.trim() ?? '',
-        email:          cols[1]?.trim() ?? '',
-        status:         (cols[2]?.trim() ?? 'PENDING') as OrderStatus,
-        amount:         parseFloat(cols[3]?.trim() ?? '0') || 0,
-        provider:       cols[4]?.trim() ?? '',
-        payment_status: cols[5]?.trim() ?? '',
-        created_at:     cols[6]?.trim() ?? '',
-      };
-    })
-    .filter((o) => o.id);
 }
 
 function Appear({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -106,7 +92,9 @@ function SkeletonRows() {
 }
 
 export default function OrdersPage() {
-  const [allOrders, setAllOrders]     = useState<Order[]>([]);
+  const router = useRouter();
+  const [orders, setOrders]           = useState<Order[]>([]);
+  const [total, setTotal]             = useState(0);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   const [search, setSearch]           = useState('');
@@ -114,16 +102,21 @@ export default function OrdersPage() {
   const [page, setPage]               = useState(1);
   const [updatingId, setUpdatingId]   = useState<string | null>(null);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const headers = { ...bearerHeader(), 'Content-Type': 'application/json' };
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (pg: number, q: string, status: OrderStatus | 'ALL') => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/analytics/export/orders`, { headers: bearerHeader() });
+      const params = new URLSearchParams({ page: String(pg), limit: String(PAGE_SIZE) });
+      if (q) params.set('search', q);
+      if (status !== 'ALL') params.set('status', status);
+      const res = await fetch(`${API}/orders/admin?${params.toString()}`, { headers: bearerHeader() });
       if (!res.ok) throw new Error(`${res.status}`);
-      const text = await res.text();
-      setAllOrders(parseCSV(text));
+      const json: ApiResponse = await res.json();
+      setOrders(json.data ?? []);
+      setTotal(json.total ?? 0);
     } catch {
       setError('Impossible de charger les commandes. Vérifiez votre connexion.');
     } finally {
@@ -131,20 +124,20 @@ export default function OrdersPage() {
     }
   }, []);
 
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  useEffect(() => { fetchOrders(page, search, statusFilter); }, [page, statusFilter, fetchOrders]);
 
-  const filtered = allOrders.filter((o) => {
-    const matchSearch = !search || o.email.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'ALL' || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const handleSearchChange = (v: string) => {
+    setSearch(v);
+    setPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchOrders(1, v, statusFilter);
+    }, 400);
+  };
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage   = Math.min(page, totalPages);
-  const pageItems  = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
-  const handleSearchChange = (v: string) => { setSearch(v); setPage(1); };
   const handleStatusFilter = (s: OrderStatus | 'ALL') => { setStatusFilter(s); setPage(1); };
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleStatusChange = async (id: string, status: OrderStatus) => {
     setUpdatingId(id);
@@ -155,7 +148,7 @@ export default function OrdersPage() {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error();
-      setAllOrders((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
+      setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
     } catch {
       alert('Erreur lors de la mise à jour du statut.');
     } finally {
@@ -166,7 +159,7 @@ export default function OrdersPage() {
   const tabAll: (OrderStatus | 'ALL')[] = ['ALL', ...STATUS_LIST];
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100%' }}>
+    <div className="admin-content">
 
       <Appear>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
@@ -179,14 +172,14 @@ export default function OrdersPage() {
             </h1>
             {!loading && (
               <p style={{ color: 'var(--bem-gray-400)', fontSize: 13, marginTop: 6 }}>
-                {filtered.length} commande{filtered.length !== 1 ? 's' : ''}
+                {total} commande{total !== 1 ? 's' : ''}
                 {statusFilter !== 'ALL' || search ? ' (filtrées)' : ' au total'}
               </p>
             )}
           </div>
 
           <button
-            onClick={fetchOrders}
+            onClick={() => fetchOrders(page, search, statusFilter)}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
               padding: '0 18px', height: 40, borderRadius: 10,
@@ -293,7 +286,7 @@ export default function OrdersPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--bem-gray-100)' }}>
-                  {['ID', 'Email', 'Statut', 'Montant', 'Prestataire', 'Paiement', 'Date', 'Action'].map((h) => (
+                  {['ID', 'Email', 'Statut', 'Montant', 'Prestataire', 'Paiement', 'Date', 'Modifier', ''].map((h) => (
                     <th key={h} style={{
                       padding: '12px 16px', textAlign: 'left',
                       fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
@@ -308,7 +301,7 @@ export default function OrdersPage() {
               <tbody>
                 {loading ? (
                   <SkeletonRows />
-                ) : pageItems.length === 0 ? (
+                ) : orders.length === 0 ? (
                   <tr>
                     <td colSpan={8} style={{ padding: '3rem', textAlign: 'center', color: 'var(--bem-gray-400)', fontSize: 14 }}>
                       {search || statusFilter !== 'ALL'
@@ -317,7 +310,7 @@ export default function OrdersPage() {
                     </td>
                   </tr>
                 ) : (
-                  pageItems.map((order) => (
+                  orders.map((order) => (
                     <tr
                       key={order.id}
                       style={{ borderBottom: '1px solid var(--bem-gray-100)', transition: 'background 0.12s' }}
@@ -328,31 +321,31 @@ export default function OrdersPage() {
                         {order.id.slice(0, 8)}…
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--bem-black)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {order.email}
+                        {order.user?.email ?? '—'}
                       </td>
                       <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                         <StatusBadge status={order.status} />
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 13, fontWeight: 700, color: 'var(--bem-black)', whiteSpace: 'nowrap' }}>
-                        {fmtAmount(order.amount)}
+                        {fmtAmount(order.totalAmount)}
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--bem-gray-700)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                        {order.provider || '—'}
+                        {order.payment?.provider || '—'}
                       </td>
                       <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                         <span style={{
                           display: 'inline-block', padding: '3px 10px', borderRadius: 99,
                           fontSize: 11, fontWeight: 700,
-                          background: order.payment_status?.toLowerCase() === 'success'
+                          background: order.payment?.status?.toLowerCase() === 'success'
                             ? 'rgba(22,163,74,0.12)' : 'rgba(107,114,128,0.12)',
-                          color: order.payment_status?.toLowerCase() === 'success'
+                          color: order.payment?.status?.toLowerCase() === 'success'
                             ? '#15803d' : '#4b5563',
                         }}>
-                          {order.payment_status || '—'}
+                          {order.payment?.status || '—'}
                         </span>
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--bem-gray-700)', whiteSpace: 'nowrap' }}>
-                        {order.created_at ? fmtDate(order.created_at) : '—'}
+                        {order.createdAt ? fmtDate(order.createdAt) : '—'}
                       </td>
                       <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                         <select
@@ -372,6 +365,32 @@ export default function OrdersPage() {
                           ))}
                         </select>
                       </td>
+                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                        <button
+                          onClick={() => router.push(`/admin/orders/${order.id}`)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            padding: '5px 12px', borderRadius: 8,
+                            border: '1.5px solid var(--bem-gray-100)',
+                            background: '#fff', color: 'var(--bem-black)',
+                            fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                            transition: 'border-color 0.15s, box-shadow 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--bem-black)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--bem-gray-100)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                          }}
+                        >
+                          Voir
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="9 18 15 12 9 6"/>
+                          </svg>
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -380,36 +399,36 @@ export default function OrdersPage() {
           </div>
 
           {/* Pagination */}
-          {!loading && filtered.length > PAGE_SIZE && (
+          {!loading && total > PAGE_SIZE && (
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '14px 20px', borderTop: '1px solid var(--bem-gray-100)',
               gap: 12,
             }}>
               <p style={{ fontSize: 13, color: 'var(--bem-gray-400)' }}>
-                Page {safePage} sur {totalPages} — {filtered.length} résultats
+                Page {page} sur {totalPages} — {total} résultats
               </p>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage <= 1}
+                  disabled={page <= 1}
                   style={{
                     padding: '6px 16px', borderRadius: 8, border: '1.5px solid var(--bem-gray-100)',
-                    fontSize: 13, fontWeight: 600, cursor: safePage <= 1 ? 'not-allowed' : 'pointer',
-                    background: '#fff', color: safePage <= 1 ? 'var(--bem-gray-400)' : 'var(--bem-black)',
-                    opacity: safePage <= 1 ? 0.5 : 1, transition: 'all 0.15s',
+                    fontSize: 13, fontWeight: 600, cursor: page <= 1 ? 'not-allowed' : 'pointer',
+                    background: '#fff', color: page <= 1 ? 'var(--bem-gray-400)' : 'var(--bem-black)',
+                    opacity: page <= 1 ? 0.5 : 1, transition: 'all 0.15s',
                   }}
                 >
                   ← Préc.
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage >= totalPages}
+                  disabled={page >= totalPages}
                   style={{
                     padding: '6px 16px', borderRadius: 8, border: '1.5px solid var(--bem-gray-100)',
-                    fontSize: 13, fontWeight: 600, cursor: safePage >= totalPages ? 'not-allowed' : 'pointer',
-                    background: '#fff', color: safePage >= totalPages ? 'var(--bem-gray-400)' : 'var(--bem-black)',
-                    opacity: safePage >= totalPages ? 0.5 : 1, transition: 'all 0.15s',
+                    fontSize: 13, fontWeight: 600, cursor: page >= totalPages ? 'not-allowed' : 'pointer',
+                    background: '#fff', color: page >= totalPages ? 'var(--bem-gray-400)' : 'var(--bem-black)',
+                    opacity: page >= totalPages ? 0.5 : 1, transition: 'all 0.15s',
                   }}
                 >
                   Suiv. →

@@ -600,7 +600,7 @@ function DangerZone() {
 /* ── Page ───────────────────────────────────────────────────── */
 export default function SettingsPage() {
   return (
-    <div style={{ padding: '2rem', minHeight: '100%', maxWidth: 860, margin: '0 auto' }}>
+    <div className="admin-content" style={{ maxWidth: 860, margin: '0 auto' }}>
 
       <Appear>
         <div style={{ marginBottom: '2rem' }}>

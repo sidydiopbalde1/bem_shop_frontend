@@ -519,7 +519,7 @@ export default function AnalyticsPage() {
   const periodOrders  = sales.reduce((s, d) => s + d.orders, 0);
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100%' }}>
+    <div className="admin-content">
 
       {/* ── Page header ── */}
       <Appear>
@@ -615,7 +615,7 @@ export default function AnalyticsPage() {
       )}
 
       {/* ── KPI cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: '2rem' }}>
+      <div className="kpi-grid" style={{ marginBottom: '2rem' }}>
         {kpis.map((kpi, i) => (
           <Appear key={kpi.label} delay={i * 60}>
             <KpiCard {...kpi} loading={loadingSummary} />
@@ -695,8 +695,7 @@ export default function AnalyticsPage() {
       </Appear>
 
       {/* ── Bottom row: top products + quick stats ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 }}
-        className="md:grid-cols-[2fr_1fr]">
+      <div className="analytics-bottom-grid">
 
         {/* Top products */}
         <Appear delay={380}>

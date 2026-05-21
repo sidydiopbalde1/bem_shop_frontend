@@ -120,7 +120,7 @@ export default function MessagesPage() {
 
   /* ── skeleton ── */
   if (loading) return (
-    <div style={{ padding: '2rem' }}>
+    <div className="admin-content">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} style={{
           height: 72, borderRadius: 14, background: '#EEECE9',
@@ -133,7 +133,7 @@ export default function MessagesPage() {
   );
 
   return (
-    <div style={{ padding: '2rem', maxWidth: 900 }}>
+    <div className="admin-content" style={{ maxWidth: 900 }}>
 
       {/* ── Header ── */}
       <div style={{ marginBottom: '1.75rem' }}>

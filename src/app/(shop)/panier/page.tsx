@@ -459,14 +459,14 @@ export default function PanierPage() {
 
   if (confirmedId) {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 48px 80px' }}>
+      <div className="panier-container">
         <OrderConfirmed orderId={confirmedId} />
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 48px 80px' }}>
+    <div className="panier-container">
 
       {/* Header */}
       <motion.div
@@ -502,7 +502,7 @@ export default function PanierPage() {
       ) : items.length === 0 ? (
         <EmptyCart />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '32px', alignItems: 'start' }}>
+        <div className="cart-page-layout">
 
           {/* Items */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

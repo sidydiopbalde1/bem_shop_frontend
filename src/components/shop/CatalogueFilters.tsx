@@ -1,42 +1,37 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-
-const CATS = [
-  { id: '',            label: 'Tout voir' },
-  { id: 'vetements',   label: 'Vêtements' },
-  { id: 'accessoires', label: 'Accessoires' },
-  { id: 'tech',        label: 'Tech' },
-  { id: 'papeterie',   label: 'Papeterie' },
-  { id: 'goodies',     label: 'Goodies' },
-];
+import type { Category } from '@/lib/types/shop.types';
 
 type Props = {
+  categories: Category[];
   activeCategory?: string;
   search?: string;
   sort?: string;
 };
 
-export default function CatalogueFilters({ activeCategory, search, sort }: Props) {
+export default function CatalogueFilters({ categories, activeCategory, search, sort }: Props) {
   const router = useRouter();
 
-  function select(id: string) {
+  function select(slug: string) {
     const q = new URLSearchParams();
     q.set('page', '1');
-    if (id)     q.set('category', id);
+    if (slug)   q.set('category', slug);
     if (search) q.set('search', search);
     if (sort)   q.set('sort', sort);
     router.push(`/catalogue?${q.toString()}`);
   }
 
+  const all = [{ id: '', name: 'Tout voir', slug: '' }, ...categories];
+
   return (
     <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '1px' }}>
-      {CATS.map((cat) => {
-        const isActive = (cat.id === '' && !activeCategory) || cat.id === activeCategory;
+      {all.map((cat) => {
+        const isActive = (cat.slug === '' && !activeCategory) || cat.slug === activeCategory;
         return (
           <button
-            key={cat.id}
-            onClick={() => select(cat.id)}
+            key={cat.slug || '__all'}
+            onClick={() => select(cat.slug)}
             style={{
               flexShrink: 0,
               padding: '7px 16px',
@@ -54,7 +49,7 @@ export default function CatalogueFilters({ activeCategory, search, sort }: Props
               marginBottom: '-1px',
             }}
           >
-            {cat.label}
+            {cat.name}
           </button>
         );
       })}

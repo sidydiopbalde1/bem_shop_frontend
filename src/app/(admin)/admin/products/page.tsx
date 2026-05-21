@@ -1278,14 +1278,15 @@ export default function ProductsPage() {
     setLoading(true);
     setError(null);
     try {
-      const limit = pending ? 100 : PAGE_SIZE;
-      const url = `${API}/products?page=${pg}&limit=${limit}${q ? `&search=${encodeURIComponent(q)}` : ''}`;
+      const params = new URLSearchParams({ page: String(pg), limit: String(PAGE_SIZE) });
+      if (q) params.set('search', q);
+      if (pending) params.set('isApproved', 'false');
+      const url = `${API}/products?${params.toString()}`;
       const res = await fetch(url, { headers: bearerHeader() });
       if (!res.ok) throw new Error(`${res.status}`);
       const json: ApiResponse = await res.json();
-      const data = pending ? (json.data ?? []).filter((p) => !p.isApproved) : (json.data ?? []);
-      setProducts(data);
-      setTotal(pending ? data.length : (json.total ?? 0));
+      setProducts(json.data ?? []);
+      setTotal(json.total ?? 0);
     } catch {
       setError('Impossible de charger les produits. Vérifiez votre connexion.');
     } finally {
@@ -1352,11 +1353,11 @@ export default function ProductsPage() {
     setTotal((t) => t + 1);
   };
 
-  const totalPages  = pendingMode ? 1 : Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages  = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const allPending   = loading ? null : products.filter((p) => !p.isApproved).length;
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100%' }}>
+    <div className="admin-content">
 
       <Appear>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
@@ -1671,7 +1672,7 @@ export default function ProductsPage() {
           </div>
 
           {/* Pagination */}
-          {!loading && !pendingMode && total > PAGE_SIZE && (
+          {!loading && total > PAGE_SIZE && (
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '14px 20px', borderTop: '1px solid var(--bem-gray-100)', gap: 12,

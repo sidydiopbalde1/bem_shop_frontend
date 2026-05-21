@@ -161,7 +161,7 @@ export default function ContactPage() {
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <div style={{
-        background: 'var(--bem-black)', padding: '72px 48px 56px',
+        background: 'var(--bem-black)', padding: 'clamp(48px, 8vw, 72px) clamp(20px, 5vw, 48px) clamp(40px, 6vw, 56px)',
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{ position: 'absolute', top: -60, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(204,31,39,0.08)', pointerEvents: 'none' }} />
@@ -183,7 +183,7 @@ export default function ContactPage() {
       </div>
 
       {/* ── Main content ──────────────────────────────────── */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '64px 48px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(20px, 5vw, 48px)' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 420px',
@@ -410,11 +410,12 @@ export default function ContactPage() {
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
                 {[
-                  { label: 'Instagram', href: '#', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg> },
-                  { label: 'Facebook', href: '#', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
-                  { label: 'LinkedIn', href: '#', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
+                  { label: 'TikTok',    href: 'https://www.tiktok.com/@bemdkr', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg> },
+                  { label: 'Instagram', href: 'https://www.instagram.com/bemdkr/', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg> },
+                  { label: 'Facebook',  href: 'https://www.facebook.com/bemdakar', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
+                  { label: 'LinkedIn',  href: 'https://www.linkedin.com/school/bemdakar/posts/?feedView=all', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
                 ].map((s) => (
-                  <a key={s.label} href={s.href} aria-label={s.label} style={{
+                  <a key={s.label} href={s.href} aria-label={s.label} target="_blank" rel="noopener noreferrer" style={{
                     width: 38, height: 38, borderRadius: 10,
                     background: 'rgba(255,255,255,0.07)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -465,7 +466,7 @@ export default function ContactPage() {
       </div>
 
       {/* ── FAQ ─────────────────────────────────────────────── */}
-      <div style={{ background: 'var(--bem-gray-50)', padding: '64px 48px', borderTop: '1px solid var(--bem-gray-100)' }}>
+      <div style={{ background: 'var(--bem-gray-50)', padding: 'clamp(40px, 6vw, 64px) clamp(20px, 5vw, 48px)', borderTop: '1px solid var(--bem-gray-100)' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 10 }}>

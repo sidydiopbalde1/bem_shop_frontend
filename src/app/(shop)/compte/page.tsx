@@ -190,7 +190,7 @@ function RegisterForm({ onSwitch }: { onSwitch:()=>void }) {
   return (
     <form onSubmit={handle}>
       {error && <ErrorBox msg={error} />}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+      <div style={{ display:'grid', gap:'10px' }} className="grid-cols-2 max-[400px]:grid-cols-1">
         <Field label="Prénom" name="firstName" value={form.firstName} onChange={set('firstName')} autoComplete="given-name" />
         <Field label="Nom"    name="lastName"  value={form.lastName}  onChange={set('lastName')}  autoComplete="family-name" />
       </div>
@@ -212,12 +212,12 @@ function RegisterForm({ onSwitch }: { onSwitch:()=>void }) {
 function AuthPage() {
   const [tab, setTab] = useState<'login'|'register'>('login');
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', minHeight:'82vh' }}
-      className="max-md:grid-cols-1">
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}
+      className="max-md:grid-cols-1 md:min-h-[82vh]">
 
       {/* Left — branding */}
       <div className="hidden md:flex flex-col justify-between"
-        style={{ background:'var(--bem-black)', padding:'52px', position:'relative', overflow:'hidden' }}>
+        style={{ background:'var(--bem-black)', padding:'clamp(32px, 4vw, 52px)', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', top:'-80px', right:'-60px', width:'320px', height:'320px', borderRadius:'50%', background:'rgba(204,31,39,.12)', pointerEvents:'none' }} />
         <div style={{ position:'absolute', bottom:'-60px', left:'-40px', width:'220px', height:'220px', borderRadius:'50%', background:'rgba(204,31,39,.08)', pointerEvents:'none' }} />
 
@@ -266,11 +266,21 @@ function AuthPage() {
       </div>
 
       {/* Right — form */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'3rem 2rem', background:'#fafaf9' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)', background:'#fafaf9' }}>
         <div style={{ width:'100%', maxWidth:'380px' }}>
 
+          {/* Mobile brand badge — hidden on md+ */}
+          <div className="flex md:hidden items-center gap-2 mb-6">
+            <div style={{ width:32, height:32, borderRadius:8, background:'var(--bem-red)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <span style={{ fontSize:13, fontWeight:700, color:'var(--bem-black)' }}>BEM Dakar Goodies</span>
+          </div>
+
           <Fade>
-            <h2 style={{ fontFamily:'var(--font-playfair),serif', fontSize:'1.75rem', fontWeight:800, color:'var(--bem-black)', marginBottom:'5px' }}>
+            <h2 style={{ fontFamily:'var(--font-playfair),serif', fontSize:'clamp(1.4rem, 5vw, 1.75rem)', fontWeight:800, color:'var(--bem-black)', marginBottom:'5px' }}>
               {tab==='login' ? 'Bon retour !' : 'Rejoignez-nous'}
             </h2>
             <p style={{ color:'var(--bem-gray-400)', fontSize:'13px', marginBottom:'24px' }}>
@@ -394,7 +404,7 @@ function OrdersSection({ onBack }: { onBack:()=>void }) {
   useEffect(() => { fetch_(); }, [fetch_]);
 
   return (
-    <div style={{ maxWidth:'860px', margin:'0 auto', padding:'32px 48px 64px' }}>
+    <div className="bem-container" style={{ maxWidth:'860px', paddingTop:'32px', paddingBottom:'64px' }}>
       <button onClick={onBack}
         style={{ display:'inline-flex', alignItems:'center', gap:'8px', marginBottom:'28px', background:'none', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:600, color:'var(--bem-gray-400)', padding:0, transition:'color .15s' }}
         onMouseEnter={(e) => (e.currentTarget.style.color='var(--bem-black)')}
@@ -466,11 +476,353 @@ function OrdersSection({ onBack }: { onBack:()=>void }) {
   );
 }
 
+/* ── Profile section ────────────────────────────────────── */
+function ProfileSection({ onBack }: { onBack:()=>void }) {
+  const { user } = useAuth();
+  const [form, setForm] = useState({ firstName: user?.firstName??'', lastName: user?.lastName??'' });
+  const [pwForm, setPwForm] = useState({ currentPassword:'', newPassword:'', confirmPassword:'' });
+  const [busy, setBusy] = useState(false);
+  const [pwBusy, setPwBusy] = useState(false);
+  const [msg, setMsg] = useState<{type:'ok'|'err';text:string}|null>(null);
+  const [pwMsg, setPwMsg] = useState<{type:'ok'|'err';text:string}|null>(null);
+
+  const showMsg  = (type:'ok'|'err', text:string) => { setMsg({type,text}); setTimeout(()=>setMsg(null),4000); };
+  const showPwMsg= (type:'ok'|'err', text:string) => { setPwMsg({type,text}); setTimeout(()=>setPwMsg(null),4000); };
+
+  async function handleProfile(e: React.FormEvent) {
+    e.preventDefault(); setBusy(true);
+    try {
+      const r = await fetch(`${API}/auth/profile`, { method:'PATCH', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify({ firstName:form.firstName.trim(), lastName:form.lastName.trim() }) });
+      if (!r.ok) throw new Error((await r.json()).message ?? 'Erreur');
+      showMsg('ok', 'Profil mis à jour.');
+    } catch(e:unknown) { showMsg('err', e instanceof Error ? e.message : 'Erreur'); }
+    finally { setBusy(false); }
+  }
+
+  async function handlePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (pwForm.newPassword !== pwForm.confirmPassword) { showPwMsg('err','Les mots de passe ne correspondent pas.'); return; }
+    setPwBusy(true);
+    try {
+      const r = await fetch(`${API}/auth/profile`, { method:'PATCH', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify({ currentPassword:pwForm.currentPassword, newPassword:pwForm.newPassword }) });
+      if (!r.ok) throw new Error((await r.json()).message ?? 'Erreur');
+      showPwMsg('ok','Mot de passe modifié.');
+      setPwForm({ currentPassword:'', newPassword:'', confirmPassword:'' });
+    } catch(e:unknown) { showPwMsg('err', e instanceof Error ? e.message : 'Erreur'); }
+    finally { setPwBusy(false); }
+  }
+
+  const inputStyle: React.CSSProperties = { width:'100%', height:44, padding:'0 14px', borderRadius:10, border:'1.5px solid var(--bem-gray-100)', background:'var(--bem-gray-50)', fontSize:13, color:'var(--bem-black)', outline:'none', boxSizing:'border-box', transition:'border-color .18s' };
+  const labelStyle: React.CSSProperties = { display:'block', fontSize:10, fontWeight:700, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--bem-gray-400)', marginBottom:6 };
+
+  return (
+    <div className="bem-container" style={{ maxWidth:'620px', paddingTop:'32px', paddingBottom:'64px' }}>
+      <button onClick={onBack} style={{ display:'inline-flex', alignItems:'center', gap:8, marginBottom:28, background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight:600, color:'var(--bem-gray-400)', padding:0, transition:'color .15s' }}
+        onMouseEnter={(e)=>(e.currentTarget.style.color='var(--bem-black)')} onMouseLeave={(e)=>(e.currentTarget.style.color='var(--bem-gray-400)')}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Mon espace
+      </button>
+
+      <h2 style={{ fontSize:22, fontWeight:900, marginBottom:24 }}>Mon profil</h2>
+
+      {/* Infos perso */}
+      <div style={{ background:'#fff', borderRadius:16, border:'1px solid var(--bem-gray-100)', padding:'24px', marginBottom:16 }}>
+        <p style={{ fontSize:13, fontWeight:700, marginBottom:18 }}>Informations personnelles</p>
+
+        {msg && (
+          <div style={{ padding:'10px 14px', borderRadius:9, marginBottom:16, fontSize:12, fontWeight:600, background: msg.type==='ok' ? 'rgba(22,163,74,.1)' : 'rgba(204,31,39,.08)', color: msg.type==='ok' ? '#15803d' : 'var(--bem-red)', border: `1px solid ${msg.type==='ok' ? 'rgba(22,163,74,.2)' : 'rgba(204,31,39,.2)'}` }}>
+            {msg.text}
+          </div>
+        )}
+
+        {/* Email en lecture seule */}
+        <div style={{ marginBottom:14 }}>
+          <label style={labelStyle}>Adresse e-mail</label>
+          <div style={{ ...inputStyle, display:'flex', alignItems:'center', background:'var(--bem-gray-100)', color:'var(--bem-gray-400)', cursor:'default' }}>
+            {user?.email}
+          </div>
+        </div>
+
+        <form onSubmit={handleProfile}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:14 }}>
+            <div>
+              <label style={labelStyle}>Prénom</label>
+              <input style={inputStyle} value={form.firstName} onChange={(e)=>setForm(f=>({...f,firstName:e.target.value}))} required
+                onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+            </div>
+            <div>
+              <label style={labelStyle}>Nom</label>
+              <input style={inputStyle} value={form.lastName} onChange={(e)=>setForm(f=>({...f,lastName:e.target.value}))} required
+                onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+            </div>
+          </div>
+          <button type="submit" disabled={busy} style={{ height:44, padding:'0 24px', borderRadius:10, border:'none', background:busy?'var(--bem-gray-400)':'var(--bem-black)', color:'#fff', fontWeight:700, fontSize:13, cursor:busy?'wait':'pointer', transition:'background .2s' }}>
+            {busy ? 'Sauvegarde…' : 'Sauvegarder'}
+          </button>
+        </form>
+      </div>
+
+      {/* Mot de passe */}
+      <div style={{ background:'#fff', borderRadius:16, border:'1px solid var(--bem-gray-100)', padding:'24px' }}>
+        <p style={{ fontSize:13, fontWeight:700, marginBottom:18 }}>Changer le mot de passe</p>
+
+        {pwMsg && (
+          <div style={{ padding:'10px 14px', borderRadius:9, marginBottom:16, fontSize:12, fontWeight:600, background: pwMsg.type==='ok' ? 'rgba(22,163,74,.1)' : 'rgba(204,31,39,.08)', color: pwMsg.type==='ok' ? '#15803d' : 'var(--bem-red)', border: `1px solid ${pwMsg.type==='ok' ? 'rgba(22,163,74,.2)' : 'rgba(204,31,39,.2)'}` }}>
+            {pwMsg.text}
+          </div>
+        )}
+
+        <form onSubmit={handlePassword} style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          <div>
+            <label style={labelStyle}>Mot de passe actuel</label>
+            <input type="password" style={inputStyle} value={pwForm.currentPassword} required onChange={(e)=>setPwForm(f=>({...f,currentPassword:e.target.value}))}
+              onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+          </div>
+          <div>
+            <label style={labelStyle}>Nouveau mot de passe</label>
+            <input type="password" style={inputStyle} value={pwForm.newPassword} required minLength={8} onChange={(e)=>setPwForm(f=>({...f,newPassword:e.target.value}))}
+              onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+          </div>
+          <div>
+            <label style={labelStyle}>Confirmer le nouveau mot de passe</label>
+            <input type="password" style={inputStyle} value={pwForm.confirmPassword} required minLength={8} onChange={(e)=>setPwForm(f=>({...f,confirmPassword:e.target.value}))}
+              onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+          </div>
+          <div>
+            <button type="submit" disabled={pwBusy} style={{ height:44, padding:'0 24px', borderRadius:10, border:'none', background:pwBusy?'var(--bem-gray-400)':'var(--bem-black)', color:'#fff', fontWeight:700, fontSize:13, cursor:pwBusy?'wait':'pointer', transition:'background .2s' }}>
+              {pwBusy ? 'Modification…' : 'Modifier le mot de passe'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ── Addresses section ──────────────────────────────────── */
+type Address = { id:string; label:string; street:string; city:string; district?:string|null; phone?:string|null; isDefault:boolean };
+
+const ADDR_EMPTY = { label:'', street:'', city:'', district:'', phone:'' };
+
+function AddressForm({ initial, onSave, onCancel, busy }: { initial: typeof ADDR_EMPTY; onSave:(d:typeof ADDR_EMPTY)=>void; onCancel:()=>void; busy:boolean }) {
+  const [form, setForm] = useState(initial);
+  const s = (k: keyof typeof ADDR_EMPTY) => (v:string) => setForm(f=>({...f,[k]:v}));
+  const inputStyle: React.CSSProperties = { width:'100%', height:44, padding:'0 14px', borderRadius:10, border:'1.5px solid var(--bem-gray-100)', background:'var(--bem-gray-50)', fontSize:13, color:'var(--bem-black)', outline:'none', boxSizing:'border-box', transition:'border-color .18s' };
+  const labelStyle: React.CSSProperties = { display:'block', fontSize:10, fontWeight:700, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--bem-gray-400)', marginBottom:6 };
+  return (
+    <form onSubmit={(e)=>{ e.preventDefault(); onSave(form); }} style={{ display:'flex', flexDirection:'column', gap:12 }}>
+      <div>
+        <label style={labelStyle}>Libellé *</label>
+        <input style={inputStyle} placeholder="Ex: Maison, Bureau…" value={form.label} required onChange={(e)=>s('label')(e.target.value)}
+          onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+      </div>
+      <div>
+        <label style={labelStyle}>Rue / Adresse *</label>
+        <input style={inputStyle} placeholder="Ex: Rue 10, Liberté 6" value={form.street} required onChange={(e)=>s('street')(e.target.value)}
+          onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+        <div>
+          <label style={labelStyle}>Ville *</label>
+          <input style={inputStyle} placeholder="Dakar" value={form.city} required onChange={(e)=>s('city')(e.target.value)}
+            onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+        </div>
+        <div>
+          <label style={labelStyle}>Quartier</label>
+          <input style={inputStyle} placeholder="Plateau" value={form.district} onChange={(e)=>s('district')(e.target.value)}
+            onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+        </div>
+      </div>
+      <div>
+        <label style={labelStyle}>Téléphone</label>
+        <input style={inputStyle} placeholder="+221 77 000 00 00" value={form.phone} onChange={(e)=>s('phone')(e.target.value)}
+          onFocus={(e)=>(e.currentTarget.style.borderColor='var(--bem-black)')} onBlur={(e)=>(e.currentTarget.style.borderColor='var(--bem-gray-100)')}/>
+      </div>
+      <div style={{ display:'flex', gap:8, paddingTop:4 }}>
+        <button type="button" onClick={onCancel} style={{ flex:1, height:44, borderRadius:10, border:'1.5px solid var(--bem-gray-100)', background:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' }}>Annuler</button>
+        <button type="submit" disabled={busy} style={{ flex:2, height:44, borderRadius:10, border:'none', background:busy?'var(--bem-gray-400)':'var(--bem-black)', color:'#fff', fontSize:13, fontWeight:700, cursor:busy?'wait':'pointer' }}>
+          {busy ? 'Sauvegarde…' : 'Sauvegarder'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function AddressesSection({ onBack }: { onBack:()=>void }) {
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [editId, setEditId] = useState<string|null>(null);
+  const [actionId, setActionId] = useState<string|null>(null);
+  const [formBusy, setFormBusy] = useState(false);
+  const [error, setError] = useState<string|null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/addresses`, { headers:bearerHeader() });
+      if (!r.ok) throw new Error();
+      setAddresses(await r.json());
+    } catch { setError('Impossible de charger les adresses.'); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleAdd = async (data: typeof ADDR_EMPTY) => {
+    setFormBusy(true);
+    try {
+      const r = await fetch(`${API}/addresses`, { method:'POST', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify(data) });
+      if (!r.ok) throw new Error();
+      setAdding(false);
+      await load();
+    } catch { setError('Erreur lors de la création.'); }
+    finally { setFormBusy(false); }
+  };
+
+  const handleEdit = async (data: typeof ADDR_EMPTY) => {
+    if (!editId) return;
+    setFormBusy(true);
+    try {
+      const r = await fetch(`${API}/addresses/${editId}`, { method:'PATCH', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify(data) });
+      if (!r.ok) throw new Error();
+      setEditId(null);
+      await load();
+    } catch { setError('Erreur lors de la modification.'); }
+    finally { setFormBusy(false); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Supprimer cette adresse ?')) return;
+    setActionId(id);
+    try {
+      await fetch(`${API}/addresses/${id}`, { method:'DELETE', headers:bearerHeader() });
+      setAddresses(prev => prev.filter(a => a.id !== id));
+    } catch { setError('Erreur lors de la suppression.'); }
+    finally { setActionId(null); }
+  };
+
+  const handleSetDefault = async (id: string) => {
+    setActionId(id);
+    try {
+      const r = await fetch(`${API}/addresses/${id}/default`, { method:'PATCH', headers:bearerHeader() });
+      if (!r.ok) throw new Error();
+      await load();
+    } catch { setError('Erreur.'); }
+    finally { setActionId(null); }
+  };
+
+  const editAddr = addresses.find(a => a.id === editId);
+
+  return (
+    <div className="bem-container" style={{ maxWidth:'620px', paddingTop:'32px', paddingBottom:'64px' }}>
+      <button onClick={onBack} style={{ display:'inline-flex', alignItems:'center', gap:8, marginBottom:28, background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight:600, color:'var(--bem-gray-400)', padding:0, transition:'color .15s' }}
+        onMouseEnter={(e)=>(e.currentTarget.style.color='var(--bem-black)')} onMouseLeave={(e)=>(e.currentTarget.style.color='var(--bem-gray-400)')}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Mon espace
+      </button>
+
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:12 }}>
+        <h2 style={{ fontSize:22, fontWeight:900 }}>Mes adresses</h2>
+        {!adding && !editId && (
+          <button onClick={()=>setAdding(true)} style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'8px 18px', borderRadius:99, background:'var(--bem-black)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div style={{ padding:'12px 16px', borderRadius:10, marginBottom:16, fontSize:12, fontWeight:600, background:'rgba(204,31,39,.08)', color:'var(--bem-red)', border:'1px solid rgba(204,31,39,.2)', display:'flex', justifyContent:'space-between' }}>
+          {error}
+          <button onClick={()=>setError(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--bem-red)', fontSize:16 }}>×</button>
+        </div>
+      )}
+
+      {/* Formulaire ajout */}
+      {adding && (
+        <div style={{ background:'#fff', borderRadius:16, border:'1.5px solid var(--bem-black)', padding:24, marginBottom:16 }}>
+          <p style={{ fontSize:13, fontWeight:700, marginBottom:16 }}>Nouvelle adresse</p>
+          <AddressForm initial={ADDR_EMPTY} onSave={handleAdd} onCancel={()=>setAdding(false)} busy={formBusy} />
+        </div>
+      )}
+
+      {loading && (
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {[1,2].map(i=><div key={i} style={{ height:100, borderRadius:14, background:'var(--bem-gray-100)', animation:'shimmer 1.4s ease infinite' }}/>)}
+        </div>
+      )}
+
+      {!loading && addresses.length===0 && !adding && (
+        <div style={{ textAlign:'center', padding:'48px 20px', background:'#fff', borderRadius:16, border:'1px solid var(--bem-gray-100)' }}>
+          <div style={{ width:52, height:52, borderRadius:'50%', background:'var(--bem-gray-50)', border:'2px solid var(--bem-gray-100)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--bem-gray-400)" strokeWidth="1.4">
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <p style={{ fontSize:14, fontWeight:700, marginBottom:8 }}>Aucune adresse enregistrée</p>
+          <p style={{ fontSize:12, color:'var(--bem-gray-400)', marginBottom:20 }}>Ajoutez une adresse pour simplifier vos livraisons.</p>
+          <button onClick={()=>setAdding(true)} style={{ padding:'10px 24px', borderRadius:99, background:'var(--bem-black)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+            Ajouter une adresse
+          </button>
+        </div>
+      )}
+
+      {!loading && addresses.map((addr) => (
+        <div key={addr.id} style={{ background:'#fff', borderRadius:14, border:`1.5px solid ${addr.isDefault ? 'var(--bem-black)' : 'var(--bem-gray-100)'}`, padding:'18px 20px', marginBottom:10, opacity: actionId===addr.id ? 0.5 : 1, transition:'all .15s' }}>
+          {editId===addr.id ? (
+            <>
+              <p style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Modifier l&apos;adresse</p>
+              <AddressForm
+                initial={{ label:addr.label, street:addr.street, city:addr.city, district:addr.district??'', phone:addr.phone??'' }}
+                onSave={handleEdit} onCancel={()=>setEditId(null)} busy={formBusy}
+              />
+            </>
+          ) : (
+            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
+              <div style={{ display:'flex', gap:14, alignItems:'flex-start' }}>
+                <div style={{ width:38, height:38, borderRadius:10, background: addr.isDefault ? 'var(--bem-black)' : 'var(--bem-gray-50)', color: addr.isDefault ? '#fff' : 'var(--bem-gray-400)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:3 }}>
+                    <p style={{ fontSize:13, fontWeight:700 }}>{addr.label}</p>
+                    {addr.isDefault && <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99, background:'var(--bem-black)', color:'#fff', letterSpacing:'.08em', textTransform:'uppercase' }}>Défaut</span>}
+                  </div>
+                  <p style={{ fontSize:12, color:'var(--bem-gray-700)', lineHeight:1.5 }}>
+                    {addr.street}{addr.district ? `, ${addr.district}` : ''}, {addr.city}
+                  </p>
+                  {addr.phone && <p style={{ fontSize:12, color:'var(--bem-gray-400)', marginTop:2 }}>{addr.phone}</p>}
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:6, flexShrink:0, flexWrap:'wrap', justifyContent:'flex-end' }}>
+                {!addr.isDefault && (
+                  <button onClick={()=>handleSetDefault(addr.id)} disabled={!!actionId} style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid var(--bem-gray-100)', background:'#fff', fontSize:11, fontWeight:600, cursor:'pointer', color:'var(--bem-gray-700)', whiteSpace:'nowrap' }}>
+                    Par défaut
+                  </button>
+                )}
+                <button onClick={()=>setEditId(addr.id)} disabled={!!actionId} style={{ padding:'5px 12px', borderRadius:8, border:'none', background:'rgba(37,99,235,.1)', fontSize:11, fontWeight:600, cursor:'pointer', color:'#1d4ed8', whiteSpace:'nowrap' }}>
+                  Modifier
+                </button>
+                <button onClick={()=>handleDelete(addr.id)} disabled={!!actionId} style={{ padding:'5px 12px', borderRadius:8, border:'none', background:'rgba(204,31,39,.1)', fontSize:11, fontWeight:600, cursor:'pointer', color:'var(--bem-red)', whiteSpace:'nowrap' }}>
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Dashboard ──────────────────────────────────────────── */
 function Dashboard() {
   const { user, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
-  const [section, setSection] = useState<'home'|'orders'>('home');
+  const [section, setSection] = useState<'home'|'orders'|'profile'|'addresses'>('home');
   const [orders, setOrders] = useState<Order[]|null>(null);
 
   useEffect(() => {
@@ -482,21 +834,9 @@ function Dashboard() {
 
   if (!user) return null;
 
-  if (section==='orders') {
-    return (
-      <div style={{ background:'#fafaf9', minHeight:'80vh' }}>
-        <div style={{ background:'var(--bem-black)', padding:'16px 48px' }}>
-          <div style={{ maxWidth:'860px', margin:'0 auto', display:'flex', alignItems:'center', gap:'14px' }}>
-            <div style={{ width:'36px', height:'36px', borderRadius:'50%', background:'var(--bem-red)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px', fontWeight:800, flexShrink:0 }}>
-              {initials(user.firstName,user.lastName)}
-            </div>
-            <p style={{ color:'rgba(255,255,255,.6)', fontSize:'13px' }}>{user.firstName} {user.lastName}</p>
-          </div>
-        </div>
-        <OrdersSection onBack={() => setSection('home')} />
-      </div>
-    );
-  }
+  if (section==='orders')    return <div style={{ background:'#fafaf9', minHeight:'80vh' }}><OrdersSection    onBack={()=>setSection('home')} /></div>;
+  if (section==='profile')   return <div style={{ background:'#fafaf9', minHeight:'80vh' }}><ProfileSection   onBack={()=>setSection('home')} /></div>;
+  if (section==='addresses') return <div style={{ background:'#fafaf9', minHeight:'80vh' }}><AddressesSection onBack={()=>setSection('home')} /></div>;
 
   const NAV_CARDS = [
     {
@@ -507,12 +847,12 @@ function Dashboard() {
     {
       icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>,
       label:'Mon profil', sub:'Nom, e-mail, mot de passe',
-      accent:'#2563eb', action:undefined, enabled:false,
+      accent:'#2563eb', action:()=>setSection('profile'), enabled:true,
     },
     {
       icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
       label:'Mes adresses', sub:'Adresses de livraison enregistrées',
-      accent:'#16a34a', action:undefined, enabled:false,
+      accent:'#16a34a', action:()=>setSection('addresses'), enabled:true,
     },
   ];
 
@@ -522,7 +862,7 @@ function Dashboard() {
   return (
     <div style={{ background:'#fafaf9', minHeight:'80vh' }}>
       {/* Hero */}
-      <div style={{ background:'var(--bem-black)', padding:'40px 48px 48px', position:'relative', overflow:'hidden' }}>
+      <div style={{ background:'var(--bem-black)', padding:'40px clamp(20px, 4vw, 48px) 48px', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', top:'-80px', right:'-40px', width:'280px', height:'280px', borderRadius:'50%', background:'rgba(204,31,39,.1)', pointerEvents:'none' }} />
         <div style={{ maxWidth:'860px', margin:'0 auto', position:'relative' }}>
           <Fade>
@@ -569,10 +909,10 @@ function Dashboard() {
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'32px 48px 60px' }}>
+      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'32px clamp(20px, 4vw, 48px) 60px' }}>
 
         {/* Stats */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'14px', marginBottom:'32px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(120px, 1fr))', gap:'14px', marginBottom:'32px' }}>
           {[
             { label:'Commandes',      val:orderCount!==null?String(orderCount):'—' },
             { label:'Articles achetés', val:totalItems!==null?String(totalItems):'—' },
@@ -649,7 +989,7 @@ function Skeleton() {
   return (
     <div>
       <div style={{ background:'var(--bem-black)', height:'172px' }} />
-      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'32px 48px' }}>
+      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'32px clamp(20px, 4vw, 48px)' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14, marginBottom:28 }}>
           {[1,2,3].map((i)=><div key={i} style={{ height:76, borderRadius:14, background:'var(--bem-gray-100)', animation:'shimmer 1.4s ease infinite', animationDelay:`${i*.1}s` }} />)}
         </div>
