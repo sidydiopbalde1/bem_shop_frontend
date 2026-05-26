@@ -54,28 +54,6 @@ const VALUES = [
   },
 ];
 
-const TIMELINE = [
-  {
-    year: '2023',
-    title: 'Les débuts',
-    desc: 'Un groupe d\'étudiants passionnés lance l\'idée d\'une boutique officielle BEM. Les premiers hoodies sont commandés en édition limitée et s\'écoulent en 48 heures.',
-  },
-  {
-    year: '2024',
-    title: 'La boutique prend vie',
-    desc: 'Lancement du site e-commerce BEM Dakar Goodies. Plus de 200 pièces vendues dès la première semaine. La communauté répond présent.',
-  },
-  {
-    year: '2025',
-    title: 'Expansion de la gamme',
-    desc: 'Nouvelles catégories — accessoires, papeterie, éditions alumni. Partenariats avec des artisans locaux pour une touche authentiquement sénégalaise.',
-  },
-  {
-    year: '2026',
-    title: 'Aujourd\'hui',
-    desc: 'Plus de 1 500 pièces vendues, une communauté de 500+ membres actifs, et une nouvelle collection printemps qui s\'annonce comme la plus ambitieuse à ce jour.',
-  },
-];
 
 export default function AProposPage() {
   return (
@@ -216,7 +194,7 @@ export default function AProposPage() {
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
               Le bureau associatif étudiant — moteur de la vie du campus BEM Dakar depuis 2021.
             </p>
-          </div>
+          </div>  
         </div>
       </div>
 
@@ -268,62 +246,41 @@ export default function AProposPage() {
         </div>
       </div>
 
-      {/* ── Timeline ─────────────────────────────────────────── */}
-      <div className="bem-container section-pad" style={{ maxWidth: '860px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
+      {/* ── Vidéo promotionnelle ─────────────────────────────── */}
+      <div className="bem-container section-pad" style={{ maxWidth: '900px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 10 }}>
-            Notre parcours
+            Découvrez BEM
           </p>
           <h2 style={{
             fontFamily: 'var(--font-playfair), serif',
             fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
             fontWeight: 800, color: 'var(--bem-black)',
           }}>
-            Une aventure qui continue
+            L'esprit BEM en vidéo
           </h2>
         </div>
 
-        <div style={{ position: 'relative', paddingLeft: 32 }}>
-          {/* Vertical line */}
-          <div style={{
-            position: 'absolute', left: 7, top: 6, bottom: 6,
-            width: 2, background: 'var(--bem-gray-100)',
-          }} />
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
-            {TIMELINE.map((item, i) => (
-              <div key={item.year} style={{ position: 'relative' }}>
-                {/* Dot */}
-                <div style={{
-                  position: 'absolute', left: -32, top: 4,
-                  width: 16, height: 16, borderRadius: '50%',
-                  background: i === TIMELINE.length - 1 ? 'var(--bem-red)' : '#fff',
-                  border: `2px solid ${i === TIMELINE.length - 1 ? 'var(--bem-red)' : 'var(--bem-gray-100)'}`,
-                  boxShadow: i === TIMELINE.length - 1 ? '0 0 0 4px rgba(204,31,39,0.15)' : 'none',
-                }} />
-
-                <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-                    padding: '4px 12px', borderRadius: 99,
-                    background: i === TIMELINE.length - 1 ? 'rgba(204,31,39,0.1)' : 'var(--bem-gray-50)',
-                    color: i === TIMELINE.length - 1 ? 'var(--bem-red)' : 'var(--bem-gray-400)',
-                    flexShrink: 0,
-                  }}>
-                    {item.year}
-                  </span>
-                  <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--bem-black)', marginBottom: 6 }}>
-                      {item.title}
-                    </h3>
-                    <p style={{ fontSize: 13, color: 'var(--bem-gray-700)', lineHeight: 1.7 }}>
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          paddingBottom: '56.25%', /* ratio 16:9 */
+          borderRadius: 20,
+          overflow: 'hidden',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+          background: 'var(--bem-black)',
+        }}>
+          <iframe
+            src="https://www.youtube.com/embed/VIDEO_ID"
+            title="Vidéo promotionnelle BEM Dakar Goodies"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              border: 'none',
+            }}
+          />
         </div>
       </div>
 

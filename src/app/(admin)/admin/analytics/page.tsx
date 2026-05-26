@@ -11,6 +11,13 @@ type Summary = {
   totalRevenue: number;
   totalUsers: number;
   pendingProducts: number;
+  grossRevenue?: number;
+};
+
+type OrdersApiResponse = {
+  data: { totalAmount: number }[];
+  total: number;
+  totalPages: number;
 };
 
 type RawSaleRow = {
@@ -340,6 +347,7 @@ export default function AnalyticsPage() {
   const [summary, setSummary]     = useState<Summary | null>(null);
   const [sales, setSales]         = useState<SaleEntry[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [grossRevenue, setGrossRevenue]     = useState<number | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(true);
   const [loadingSales, setLoadingSales]     = useState(true);
   const [loadingTop, setLoadingTop]         = useState(true);
@@ -357,10 +365,39 @@ export default function AnalyticsPage() {
       const res = await fetch(`${API}/analytics/summary`, { headers });
       if (!res.ok) throw new Error(`${res.status}`);
       setSummary(await res.json());
-    } catch (e) {
+    } catch {
       setError('Impossible de charger le résumé. Vérifiez votre connexion.');
     } finally {
       setLoadingSummary(false);
+    }
+  }, []);
+
+  const fetchGrossRevenue = useCallback(async () => {
+    try {
+      // Première page pour connaître le nombre total de pages
+      const first = await fetch(`${API}/orders?page=1&limit=500`, { headers });
+      if (!first.ok) return;
+      const json: OrdersApiResponse = await first.json();
+
+      let total = json.data.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
+
+      // Si plusieurs pages, on les récupère toutes en parallèle
+      if (json.totalPages > 1) {
+        const pages = Array.from({ length: json.totalPages - 1 }, (_, i) => i + 2);
+        const results = await Promise.all(
+          pages.map((p) =>
+            fetch(`${API}/orders?page=${p}&limit=500`, { headers })
+              .then((r) => (r.ok ? r.json() as Promise<OrdersApiResponse> : null))
+          )
+        );
+        for (const r of results) {
+          if (r) total += r.data.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
+        }
+      }
+
+      setGrossRevenue(total);
+    } catch {
+      // silencieux : on garde null si le calcul échoue
     }
   }, []);
 
@@ -422,6 +459,7 @@ export default function AnalyticsPage() {
     fetchSummary();
     fetchSales(days);
     fetchTopProducts();
+    fetchGrossRevenue();
   }, []);
 
   useEffect(() => {
@@ -434,6 +472,7 @@ export default function AnalyticsPage() {
     fetchSummary();
     fetchSales(days);
     fetchTopProducts();
+    fetchGrossRevenue();
   };
 
   const handleExport = async () => {
@@ -474,9 +513,13 @@ export default function AnalyticsPage() {
       ),
     },
     {
-      label: 'Chiffre d\'affaires',
-      value: summary ? fmtRevenue(summary.totalRevenue) : '—',
-      sub: 'Paiements validés',
+      label: 'CA Brut',
+      value: grossRevenue !== null
+        ? fmtRevenue(grossRevenue)
+        : summary
+          ? fmtRevenue(summary.totalRevenue)
+          : '—',
+      sub: 'Toutes commandes confondues',
       color: '#16a34a',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -730,7 +773,7 @@ export default function AnalyticsPage() {
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 12 }}>
                 Période sélectionnée
               </p>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Chiffre d&apos;affaires</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>CA brut (période)</p>
               {loadingSales ? (
                 <div style={{ height: 24, width: 100, borderRadius: 6, background: 'rgba(255,255,255,0.1)', animation: 'pulse 1.5s ease-in-out infinite' }} />
               ) : (

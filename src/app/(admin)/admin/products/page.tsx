@@ -13,6 +13,7 @@ type Product = {
   name: string;
   description?: string;
   price: string | number;
+  purchasePrice?: string | number | null;
   stock: number;
   isApproved: boolean;
   imageUrls: string[];
@@ -31,6 +32,7 @@ type NewProduct = {
   name: string;
   description: string;
   price: string;
+  purchasePrice: string;
   stock: string;
   categoryId: string;
   images: File[];
@@ -40,6 +42,7 @@ type EditForm = {
   name: string;
   description: string;
   price: string;
+  purchasePrice: string;
   stock: string;
   categoryId: string;
   newImages: File[];
@@ -115,7 +118,7 @@ function EditProductModal({
   onClose: () => void;
   onUpdated: (p: Product) => void;
 }) {
-  const EMPTY_FORM: EditForm = { name: '', description: '', price: '', stock: '', categoryId: '', newImages: [] };
+  const EMPTY_FORM: EditForm = { name: '', description: '', price: '', purchasePrice: '', stock: '', categoryId: '', newImages: [] };
 
   const [form, setForm] = useState<EditForm>(EMPTY_FORM);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
@@ -133,6 +136,7 @@ function EditProductModal({
       name: product.name,
       description: product.description ?? '',
       price: String(product.price),
+      purchasePrice: product.purchasePrice != null ? String(product.purchasePrice) : '',
       stock: String(product.stock),
       categoryId: product.category?.id ?? '',
       newImages: [],
@@ -196,6 +200,7 @@ function EditProductModal({
     const fd = new FormData();
     fd.append('name', form.name.trim());
     fd.append('price', form.price);
+    if (form.purchasePrice.trim()) fd.append('purchasePrice', form.purchasePrice);
     fd.append('stock', form.stock);
     fd.append('categoryId', form.categoryId);
     if (form.description.trim()) fd.append('description', form.description.trim());
@@ -381,16 +386,16 @@ function EditProductModal({
             />
           </div>
 
-          {/* Prix + Stock */}
+          {/* Prix vente + Prix achat */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Prix (XOF) *</label>
+              <label style={labelStyle}>Prix de vente (XOF) *</label>
               <input
                 type="number"
                 required
                 min="0"
                 step="100"
-                placeholder="5000"
+                placeholder="15000"
                 value={form.price}
                 onChange={(e) => set('price')(e.target.value)}
                 style={inputStyle}
@@ -405,15 +410,17 @@ function EditProductModal({
               />
             </div>
             <div>
-              <label style={labelStyle}>Stock *</label>
+              <label style={labelStyle}>
+                Prix d'achat (XOF)
+                <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 4, fontSize: 9 }}>admin</span>
+              </label>
               <input
                 type="number"
-                required
                 min="0"
-                step="1"
-                placeholder="10"
-                value={form.stock}
-                onChange={(e) => set('stock')(e.target.value)}
+                step="100"
+                placeholder="8000"
+                value={form.purchasePrice}
+                onChange={(e) => set('purchasePrice')(e.target.value)}
                 style={inputStyle}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = 'var(--bem-black)';
@@ -425,6 +432,29 @@ function EditProductModal({
                 }}
               />
             </div>
+          </div>
+
+          {/* Stock */}
+          <div>
+            <label style={labelStyle}>Stock *</label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="1"
+              placeholder="10"
+              value={form.stock}
+              onChange={(e) => set('stock')(e.target.value)}
+              style={inputStyle}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--bem-black)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,13,13,0.06)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--bem-gray-100)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            />
           </div>
 
           {/* Catégorie */}
@@ -710,7 +740,7 @@ function AddProductModal({
   onClose: () => void;
   onCreated: (product: Product) => void;
 }) {
-  const EMPTY_PRODUCT: NewProduct = { name: '', description: '', price: '', stock: '', categoryId: '', images: [] };
+  const EMPTY_PRODUCT: NewProduct = { name: '', description: '', price: '', purchasePrice: '', stock: '', categoryId: '', images: [] };
 
   const [form, setForm] = useState<NewProduct>(EMPTY_PRODUCT);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -783,6 +813,7 @@ function AddProductModal({
     const fd = new FormData();
     fd.append('name', form.name.trim());
     fd.append('price', form.price);
+    if (form.purchasePrice.trim()) fd.append('purchasePrice', form.purchasePrice);
     fd.append('stock', form.stock);
     fd.append('categoryId', form.categoryId);
     if (form.description.trim()) fd.append('description', form.description.trim());
@@ -967,16 +998,16 @@ function AddProductModal({
             />
           </div>
 
-          {/* Prix + Stock */}
+          {/* Prix vente + Prix achat */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Prix (XOF) *</label>
+              <label style={labelStyle}>Prix de vente (XOF) *</label>
               <input
                 type="number"
                 required
                 min="0"
                 step="100"
-                placeholder="5000"
+                placeholder="15000"
                 value={form.price}
                 onChange={(e) => set('price')(e.target.value)}
                 style={inputStyle}
@@ -991,15 +1022,17 @@ function AddProductModal({
               />
             </div>
             <div>
-              <label style={labelStyle}>Stock *</label>
+              <label style={labelStyle}>
+                Prix d'achat (XOF)
+                <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 4, fontSize: 9 }}>admin</span>
+              </label>
               <input
                 type="number"
-                required
                 min="0"
-                step="1"
-                placeholder="10"
-                value={form.stock}
-                onChange={(e) => set('stock')(e.target.value)}
+                step="100"
+                placeholder="8000"
+                value={form.purchasePrice}
+                onChange={(e) => set('purchasePrice')(e.target.value)}
                 style={inputStyle}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = 'var(--bem-black)';
@@ -1011,6 +1044,29 @@ function AddProductModal({
                 }}
               />
             </div>
+          </div>
+
+          {/* Stock */}
+          <div>
+            <label style={labelStyle}>Stock *</label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="1"
+              placeholder="10"
+              value={form.stock}
+              onChange={(e) => set('stock')(e.target.value)}
+              style={inputStyle}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--bem-black)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,13,13,0.06)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--bem-gray-100)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            />
           </div>
 
           {/* Catégorie */}
@@ -1258,6 +1314,228 @@ function AddProductModal({
   );
 }
 
+/* ── Threshold Modal ──────────────────────────────────────────── */
+function ThresholdModal({
+  open,
+  product,
+  current,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  product: Product | null;
+  current: number | undefined;
+  onClose: () => void;
+  onSaved: (productId: string, threshold: number | null) => void;
+}) {
+  const [value, setValue] = useState('');
+  const [busy, setBusy]   = useState(false);
+  const [success, setSuccess] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open || !product) return;
+    setValue(current !== undefined ? String(current) : '');
+    setSuccess(false);
+    setTimeout(() => inputRef.current?.focus(), 80);
+  }, [open, product, current]);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [open, onClose]);
+
+  const handleSave = async () => {
+    if (!product) return;
+    const threshold = Number(value);
+    if (!value.trim() || isNaN(threshold) || threshold < 0) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/thresholds', {
+        method: 'PUT',
+        headers: { ...bearerHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id, threshold }),
+      });
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => { onSaved(product.id, threshold); onClose(); }, 700);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleClear = async () => {
+    if (!product) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/thresholds?productId=${product.id}`, {
+        method: 'DELETE',
+        headers: bearerHeader(),
+      });
+      if (res.ok) { onSaved(product.id, null); onClose(); }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open || !product) return null;
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', height: 44, padding: '0 12px', borderRadius: 9,
+    border: '1.5px solid var(--bem-gray-100)',
+    background: 'var(--bem-gray-50)', fontSize: 14,
+    color: 'var(--bem-black)', outline: 'none',
+    transition: 'border-color 0.18s, box-shadow 0.18s',
+    boxSizing: 'border-box',
+  };
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 60, backdropFilter: 'blur(2px)' }} />
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%',
+        transform: 'translate(-50%,-50%)',
+        width: '100%', maxWidth: 420,
+        background: '#fff', borderRadius: 18, zIndex: 61,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        padding: '28px 28px 24px',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 4 }}>
+              Seuil d'alerte
+            </p>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--bem-black)', lineHeight: 1.3 }}>
+              {product.name}
+            </h2>
+          </div>
+          <button onClick={onClose} style={{
+            width: 32, height: 32, borderRadius: '50%', border: 'none',
+            background: 'var(--bem-gray-50)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--bem-gray-400)', flexShrink: 0,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Info */}
+        <div style={{
+          display: 'flex', gap: 12, marginBottom: 20,
+          padding: '12px 14px', borderRadius: 10,
+          background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)',
+        }}>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--bem-gray-400)', marginBottom: 4 }}>Stock actuel</p>
+            <p style={{ fontSize: 20, fontWeight: 800, color: product.stock <= 10 ? 'var(--bem-red)' : 'var(--bem-black)' }}>{product.stock}</p>
+          </div>
+          <div style={{ width: 1, background: 'var(--bem-gray-100)' }} />
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--bem-gray-400)', marginBottom: 4 }}>Seuil actuel</p>
+            <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--bem-black)' }}>
+              {current !== undefined ? current : <span style={{ color: 'var(--bem-gray-400)', fontSize: 14 }}>non défini</span>}
+            </p>
+          </div>
+        </div>
+
+        {/* Input */}
+        <div style={{ marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--bem-gray-400)', marginBottom: 8 }}>
+            Nouveau seuil d'alerte (unités)
+          </label>
+          <input
+            ref={inputRef}
+            type="number"
+            min="0"
+            step="1"
+            placeholder="Ex : 5"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+            style={inputStyle}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--bem-black)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,13,13,0.06)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--bem-gray-100)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
+          <p style={{ fontSize: 11, color: 'var(--bem-gray-400)', marginTop: 6 }}>
+            Une alerte sera déclenchée dès que le stock descend à ce niveau.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+          {current !== undefined && (
+            <button
+              onClick={handleClear}
+              disabled={busy}
+              style={{
+                padding: '0 16px', height: 42, borderRadius: 10,
+                border: '1.5px solid rgba(204,31,39,0.3)',
+                background: 'rgba(204,31,39,0.06)', color: 'var(--bem-red)',
+                fontSize: 12, fontWeight: 700, cursor: busy ? 'wait' : 'pointer',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+            >
+              Supprimer
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            disabled={busy}
+            style={{
+              flex: 1, height: 42, borderRadius: 10,
+              border: '1.5px solid var(--bem-gray-100)',
+              background: '#fff', color: 'var(--bem-gray-700)',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--bem-black)')}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--bem-gray-100)')}
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={busy || success || !value.trim()}
+            style={{
+              flex: 2, height: 42, borderRadius: 10, border: 'none',
+              background: busy || success || !value.trim() ? 'var(--bem-gray-400)' : 'var(--bem-black)',
+              color: '#fff', fontSize: 13, fontWeight: 700,
+              cursor: busy || success || !value.trim() ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              transition: 'background 0.2s',
+            }}
+          >
+            {busy ? (
+              <span style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+            ) : success ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Enregistré !
+              </>
+            ) : (
+              'Enregistrer'
+            )}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ── Main page ─────────────────────────────────────────────────── */
 export default function ProductsPage() {
   const [products, setProducts]   = useState<Product[]>([]);
@@ -1270,6 +1548,8 @@ export default function ProductsPage() {
   const [actionId, setActionId]   = useState<string | null>(null);
   const [addOpen, setAddOpen]     = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [thresholds, setThresholds] = useState<Record<string, number>>({});
+  const [thresholdProduct, setThresholdProduct] = useState<Product | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const headers = { ...bearerHeader(), 'Content-Type': 'application/json' };
@@ -1297,6 +1577,24 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchProducts(page, search, pendingMode);
   }, [page, pendingMode, fetchProducts]);
+
+  /* load thresholds once on mount */
+  useEffect(() => {
+    fetch('/api/thresholds', { headers: bearerHeader() })
+      .then((r) => r.ok ? r.json() : {})
+      .then((data: Record<string, number>) => setThresholds(data))
+      .catch(() => {});
+  }, []);
+
+  const handleThresholdSaved = (productId: string, threshold: number | null) => {
+    setThresholds((prev) => {
+      const next = { ...prev };
+      if (threshold === null) delete next[productId];
+      else next[productId] = threshold;
+      return next;
+    });
+    setThresholdProduct(null);
+  };
 
   const handleSearchChange = (v: string) => {
     setSearch(v);
@@ -1505,7 +1803,7 @@ export default function ProductsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--bem-gray-100)' }}>
-                  {['Image', 'Nom', 'Prix', 'Stock', 'Statut', 'Catégorie', 'Actions'].map((h) => (
+                  {['Image', 'Nom', 'Prix vente', "Prix d'achat", 'Marge', 'Stock', 'Seuil', 'Statut', 'Catégorie', 'Actions'].map((h) => (
                     <th key={h} style={{
                       padding: '12px 16px', textAlign: 'left',
                       fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
@@ -1522,7 +1820,7 @@ export default function ProductsPage() {
                   <SkeletonRows />
                 ) : products.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ padding: '3rem', textAlign: 'center' }}>
+                    <td colSpan={10} style={{ padding: '3rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                         <div style={{
                           width: 52, height: 52, borderRadius: '50%',
@@ -1590,8 +1888,56 @@ export default function ProductsPage() {
                         <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--bem-black)', whiteSpace: 'nowrap' }}>
                           {fmtPrice(product.price)}
                         </td>
+                        <td style={{ padding: '12px 16px', fontSize: 13, whiteSpace: 'nowrap', color: product.purchasePrice != null ? 'var(--bem-black)' : 'var(--bem-gray-400)' }}>
+                          {product.purchasePrice != null ? fmtPrice(product.purchasePrice) : '—'}
+                        </td>
+                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                          {product.purchasePrice != null ? (() => {
+                            const sellPrice = Number(product.price);
+                            const buyPrice  = Number(product.purchasePrice);
+                            const margin    = sellPrice - buyPrice;
+                            const pct       = buyPrice > 0 ? Math.round((margin / buyPrice) * 100) : null;
+                            const color     = margin >= 0 ? '#15803d' : 'var(--bem-red)';
+                            return (
+                              <span style={{ fontSize: 12, fontWeight: 700, color }}>
+                                {margin >= 0 ? '+' : ''}{new Intl.NumberFormat('fr-FR').format(margin)} XOF
+                                {pct !== null && <span style={{ fontWeight: 400, marginLeft: 4, opacity: 0.75 }}>({pct}%)</span>}
+                              </span>
+                            );
+                          })() : <span style={{ color: 'var(--bem-gray-400)', fontSize: 12 }}>—</span>}
+                        </td>
                         <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                           <StockBadge stock={product.stock} />
+                        </td>
+                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                          <button
+                            onClick={() => setThresholdProduct(product)}
+                            title="Définir le seuil d'alerte"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 6,
+                              padding: '4px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                              fontSize: 12, fontWeight: 600,
+                              background: thresholds[product.id] !== undefined
+                                ? (product.stock <= thresholds[product.id]
+                                  ? 'rgba(204,31,39,0.12)'
+                                  : 'rgba(245,158,11,0.10)')
+                                : 'var(--bem-gray-50)',
+                              color: thresholds[product.id] !== undefined
+                                ? (product.stock <= thresholds[product.id]
+                                  ? 'var(--bem-red)'
+                                  : '#b45309')
+                                : 'var(--bem-gray-400)',
+                              transition: 'opacity 0.15s',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            {thresholds[product.id] !== undefined ? thresholds[product.id] : '—'}
+                          </button>
                         </td>
                         <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                           <ApprovalBadge approved={product.isApproved} />
@@ -1710,6 +2056,14 @@ export default function ProductsPage() {
           )}
         </div>
       </Appear>
+
+      <ThresholdModal
+        open={thresholdProduct !== null}
+        product={thresholdProduct}
+        current={thresholdProduct ? thresholds[thresholdProduct.id] : undefined}
+        onClose={() => setThresholdProduct(null)}
+        onSaved={handleThresholdSaved}
+      />
 
       <EditProductModal
         open={editProduct !== null}

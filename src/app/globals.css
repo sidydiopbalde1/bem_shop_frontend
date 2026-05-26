@@ -478,7 +478,7 @@ body {
   height: 100vh;
   overflow-y: auto;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 50;
+  z-index: 40;
 }
 @media (max-width: 1023px) {
   .admin-sidebar {
@@ -486,6 +486,7 @@ body {
     left: 0;
     top: 0;
     transform: translateX(-100%);
+    z-index: 60;
   }
   .admin-sidebar.sidebar-open {
     transform: translateX(0);

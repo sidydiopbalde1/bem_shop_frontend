@@ -1,12 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 import { bearerHeader } from '@/lib/auth';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+
+type StockAlert = {
+  id: string;
+  productName: string;
+  stock: number;
+  threshold: number;
+  triggeredAt: string;
+  read: boolean;
+  emailSent: boolean;
+};
 
 /* ── icons ── */
 const IconAnalytics = () => (
@@ -89,6 +99,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [stockAlerts, setStockAlerts] = useState<StockAlert[]>([]);
+  const [alertsOpen, setAlertsOpen] = useState(false);
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -104,6 +118,52 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const id = setInterval(fetchUnread, 60_000);
     return () => clearInterval(id);
   }, []);
+
+  /* ── Stock alerts polling ── */
+  const fetchAlerts = async (check = false) => {
+    try {
+      const url = check ? '/api/notifications?check=1' : '/api/notifications';
+      const res = await fetch(url, { headers: bearerHeader() });
+      if (res.ok) setStockAlerts(await res.json());
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchAlerts(true);
+    const id = setInterval(() => fetchAlerts(true), 120_000);
+    return () => clearInterval(id);
+  }, []);
+
+  /* close alert panel on outside click */
+  useEffect(() => {
+    if (!alertsOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        !bellRef.current?.contains(e.target as Node) &&
+        !panelRef.current?.contains(e.target as Node)
+      ) {
+        setAlertsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [alertsOpen]);
+
+  const unreadAlerts = stockAlerts.filter((a) => !a.read).length;
+
+  const markRead = async (id: string) => {
+    setStockAlerts((prev) => prev.map((a) => a.id === id ? { ...a, read: true } : a));
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, read: true }),
+    });
+  };
+
+  const dismissAlert = async (id: string) => {
+    setStockAlerts((prev) => prev.filter((a) => a.id !== id));
+    await fetch(`/api/notifications?id=${id}`, { method: 'DELETE' });
+  };
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -131,7 +191,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           onClick={() => setSidebarOpen(false)}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-            zIndex: 40,
+            zIndex: 55,
           }}
           className="lg:hidden"
         />
@@ -140,24 +200,168 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* ── Sidebar ── */}
       <aside className={`admin-sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         {/* Brand */}
-        <div style={{ padding: '28px 24px 20px' }}>
+        <div style={{ padding: '28px 24px 20px', position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 8,
               background: 'var(--bem-red)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
             }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </div>
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>BEM Admin</p>
               <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Dashboard
               </p>
             </div>
+
+            {/* Bell button */}
+            <button
+              ref={bellRef}
+              onClick={() => {
+                setAlertsOpen((o) => !o);
+                if (!alertsOpen && stockAlerts.some((a) => !a.read)) {
+                  stockAlerts.filter((a) => !a.read).forEach((a) => markRead(a.id));
+                }
+              }}
+              style={{
+                position: 'relative', width: 32, height: 32, borderRadius: 8, border: 'none',
+                background: alertsOpen ? 'rgba(204,31,39,0.3)' : 'rgba(255,255,255,0.08)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: unreadAlerts > 0 ? '#fbbf24' : 'rgba(255,255,255,0.55)',
+                transition: 'background 0.15s, color 0.15s', flexShrink: 0,
+              }}
+              onMouseEnter={(e) => { if (!alertsOpen) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.14)'; }}
+              onMouseLeave={(e) => { if (!alertsOpen) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)'; }}
+              title="Alertes de stock"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {unreadAlerts > 0 && (
+                <span style={{
+                  position: 'absolute', top: -4, right: -4,
+                  width: 16, height: 16, borderRadius: '50%',
+                  background: 'var(--bem-red)', color: '#fff',
+                  fontSize: 9, fontWeight: 800,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid var(--bem-black)',
+                }}>
+                  {unreadAlerts > 9 ? '9+' : unreadAlerts}
+                </span>
+              )}
+            </button>
           </div>
+
+          {/* Alerts panel */}
+          {alertsOpen && (
+            <div
+              ref={panelRef}
+              style={{
+                position: 'absolute', top: '100%', left: 12, right: 12, zIndex: 100,
+                background: '#1a1a1a', borderRadius: 14,
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                <p style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>Alertes stock</p>
+                <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10 }}>
+                  {stockAlerts.length} alerte{stockAlerts.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {stockAlerts.length === 0 ? (
+                <div style={{ padding: '20px 14px', textAlign: 'center' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" style={{ marginBottom: 8 }}>
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>Aucune alerte active</p>
+                </div>
+              ) : (
+                <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+                  {stockAlerts.map((alert) => (
+                    <div
+                      key={alert.id}
+                      style={{
+                        padding: '10px 14px',
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        background: alert.read ? 'transparent' : 'rgba(204,31,39,0.08)',
+                        display: 'flex', gap: 10, alignItems: 'flex-start',
+                      }}
+                    >
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                        background: 'rgba(204,31,39,0.2)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        marginTop: 1,
+                      }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--bem-red)" strokeWidth="2.2">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                          <line x1="12" y1="9" x2="12" y2="13"/>
+                          <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          color: '#fff', fontSize: 11, fontWeight: 600, lineHeight: 1.3,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {alert.productName}
+                        </p>
+                        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, marginTop: 2 }}>
+                          Stock : <span style={{ color: 'var(--bem-red)', fontWeight: 700 }}>{alert.stock}</span>
+                          {' '}/ Seuil : {alert.threshold}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => dismissAlert(alert.id)}
+                        style={{
+                          width: 22, height: 22, borderRadius: '50%', border: 'none',
+                          background: 'rgba(255,255,255,0.08)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'rgba(255,255,255,0.4)', flexShrink: 0,
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                        title="Rejeter"
+                      >
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {stockAlerts.length > 0 && (
+                <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <Link
+                    href="/admin/products"
+                    onClick={() => setAlertsOpen(false)}
+                    style={{
+                      display: 'block', textAlign: 'center',
+                      color: 'var(--bem-red)', fontSize: 11, fontWeight: 700, textDecoration: 'none',
+                    }}
+                  >
+                    Voir les produits →
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Divider */}
