@@ -126,12 +126,9 @@ export default function AProposPage() {
 
       {/* ── Mission ──────────────────────────────────────────── */}
       <div className="bem-container section-pad">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 64, alignItems: 'center',
-        }}
-          className="max-md:grid-cols-1"
+        <div
+          style={{ gap: 64, alignItems: 'center' }}
+          className="grid grid-cols-1 md:grid-cols-2"
         >
           {/* Text */}
           <div>
@@ -271,8 +268,8 @@ export default function AProposPage() {
           background: 'var(--bem-black)',
         }}>
           <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID"
-            title="Vidéo promotionnelle BEM Dakar Goodies"
+            src="https://www.youtube.com/embed/yDPhLImTZMM"
+            title="Et si votre avenir commençait à BEM Dakar ?"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             style={{

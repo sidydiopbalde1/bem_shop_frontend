@@ -4,7 +4,7 @@ const ITEMS = [
   '🚚 Livraison express à Dakar',
   '🎓 Collection officielle BEM 2026',
   '💳 Paiement Mobile Money accepté',
-  '↩️ Retours sous 7 jours',
+  '↩️ Retour sous 7 jours',
   '🔥 Stock limité — commandez vite',
 ];
 

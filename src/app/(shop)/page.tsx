@@ -10,6 +10,7 @@ async function getFeaturedProducts() {
   try {
     const res = await fetch(`${process.env.API_URL}/products?limit=8`, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(5000),
     });
     console.log('API response status:', res);
     if (!res.ok) return [];

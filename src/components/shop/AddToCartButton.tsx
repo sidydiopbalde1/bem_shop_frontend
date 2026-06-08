@@ -30,39 +30,34 @@ export default function AddToCartButton({ productId, isOutOfStock, product }: Pr
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex items-center justify-center gap-3">
       {/* Quantity selector */}
       {!isOutOfStock && (
-        <div>
-          <p className="text-xs font-medium uppercase tracking-widest mb-3 text-gray-500">
-            Quantité
-          </p>
-          <div className="inline-flex items-center rounded-full bg-gray-50 border-[1.5px] border-gray-100 p-1">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => change(-1)}
-              disabled={qty <= 1}
-              aria-label="Diminuer"
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
-                qty <= 1 ? 'text-gray-300 cursor-not-allowed' : 'text-black hover:bg-white hover:shadow-sm cursor-pointer'
-              }`}
-            >
-              <Minus size={18} strokeWidth={2} />
-            </motion.button>
-            
-            <span className="w-10 text-center font-semibold text-lg select-none">
-              {qty}
-            </span>
-            
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => change(1)}
-              aria-label="Augmenter"
-              className="w-10 h-10 flex items-center justify-center rounded-full text-black hover:bg-white hover:shadow-sm transition-colors cursor-pointer"
-            >
-              <Plus size={18} strokeWidth={2} />
-            </motion.button>
-          </div>
+        <div className="inline-flex items-center rounded-full bg-gray-50 border-[1.5px] border-gray-100 p-1 shrink-0">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => change(-1)}
+            disabled={qty <= 1}
+            aria-label="Diminuer"
+            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+              qty <= 1 ? 'text-gray-300 cursor-not-allowed' : 'text-black hover:bg-white hover:shadow-sm cursor-pointer'
+            }`}
+          >
+            <Minus size={15} strokeWidth={2} />
+          </motion.button>
+
+          <span className="w-8 text-center font-semibold text-base select-none">
+            {qty}
+          </span>
+
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => change(1)}
+            aria-label="Augmenter"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-black hover:bg-white hover:shadow-sm transition-colors cursor-pointer"
+          >
+            <Plus size={15} strokeWidth={2} />
+          </motion.button>
         </div>
       )}
 
@@ -72,11 +67,11 @@ export default function AddToCartButton({ productId, isOutOfStock, product }: Pr
         whileTap={!isOutOfStock ? { scale: 0.98 } : {}}
         onClick={handleAdd}
         disabled={isOutOfStock}
-        className={`relative w-full h-[56px] rounded-full text-[15px] font-semibold tracking-wide overflow-hidden transition-colors ${
-          isOutOfStock 
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-            : added 
-              ? 'bg-green-600 text-white shadow-lg shadow-green-600/30' 
+        className={`relative flex-1 h-[46px] rounded-full text-[13px] font-semibold tracking-wide overflow-hidden transition-colors ${
+          isOutOfStock
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : added
+              ? 'bg-green-600 text-white shadow-lg shadow-green-600/30'
               : 'bg-black text-white hover:shadow-xl hover:shadow-black/20'
         }`}
       >
@@ -86,25 +81,25 @@ export default function AddToCartButton({ productId, isOutOfStock, product }: Pr
               Rupture de stock
             </motion.span>
           ) : added ? (
-            <motion.span 
+            <motion.span
               key="added"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               className="flex items-center justify-center gap-2 w-full h-full"
             >
-              <Check size={20} strokeWidth={3} />
-              Ajouté au panier !
+              <Check size={16} strokeWidth={3} />
+              Ajouté !
             </motion.span>
           ) : (
-            <motion.span 
+            <motion.span
               key="add"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               className="flex items-center justify-center gap-2 w-full h-full"
             >
-              <ShoppingBag size={20} strokeWidth={2} />
+              <ShoppingBag size={16} strokeWidth={2} />
               Ajouter au panier
             </motion.span>
           )}

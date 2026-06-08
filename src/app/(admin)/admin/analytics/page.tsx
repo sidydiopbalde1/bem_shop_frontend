@@ -43,11 +43,7 @@ type TopProduct = {
 const fmt = (n: number) =>
   new Intl.NumberFormat('fr-FR').format(Math.round(n));
 
-const fmtRevenue = (n: number) => {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M XOF`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K XOF`;
-  return `${fmt(n)} XOF`;
-};
+const fmtRevenue = (n: number) => `${fmt(Math.round(n))} FCFA`;
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
@@ -64,7 +60,7 @@ function normalizeSales(raw: RawSaleRow[]): SaleEntry[] {
     }
     const revenue =
       row._sum && typeof row._sum === 'object'
-        ? (row._sum.totalAmount ?? 0)
+        ? Number(row._sum.totalAmount ?? 0)
         : 0;
     const prev = map.get(date) ?? { orders: 0, revenue: 0 };
     map.set(date, { orders: prev.orders + orders, revenue: prev.revenue + revenue });
@@ -226,7 +222,7 @@ function SalesBarChart({ data, metric }: { data: SaleEntry[]; metric: 'revenue' 
                     }}>
                       <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, marginBottom: 2 }}>{fmtDate(entry.date)}</p>
                       {metric === 'revenue'
-                        ? <p>{fmt(entry.revenue)} XOF</p>
+                        ? <p>{fmtRevenue(entry.revenue)}</p>
                         : <p>{entry.orders} commande{entry.orders > 1 ? 's' : ''}</p>}
                     </div>
                   )}
@@ -379,7 +375,7 @@ export default function AnalyticsPage() {
       if (!first.ok) return;
       const json: OrdersApiResponse = await first.json();
 
-      let total = json.data.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
+      let total = json.data.reduce((s, o) => s + Number(o.totalAmount ?? 0), 0);
 
       // Si plusieurs pages, on les récupère toutes en parallèle
       if (json.totalPages > 1) {
@@ -391,7 +387,7 @@ export default function AnalyticsPage() {
           )
         );
         for (const r of results) {
-          if (r) total += r.data.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
+          if (r) total += r.data.reduce((s, o) => s + Number(o.totalAmount ?? 0), 0);
         }
       }
 

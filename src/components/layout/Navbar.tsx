@@ -11,7 +11,7 @@ import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
 
 const NAV_LINKS = [
-  { label: 'Home',      href: '/',          Icon: Home },
+  { label: 'Accueil',      href: '/',          Icon: Home },
   { label: 'Catalogue', href: '/catalogue', Icon: LayoutGrid },
   { label: 'Contact',   href: '/contact',   Icon: Mail },
   { label: 'À propos',  href: '/a-propos',  Icon: Info },
@@ -176,12 +176,6 @@ export default function Navbar() {
         })()}
       </nav>
 
-      {/* Espace réservé pour éviter que le contenu passe sous la tab bar */}
-      <style>{`
-        @media (max-width: 767px) {
-          body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
-        }
-      `}</style>
     </>
   );
 }

@@ -211,39 +211,97 @@ function OrderConfirmed({ orderId }: { orderId: string }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 0 120px', textAlign: 'center' }}
+      style={{ maxWidth: '560px', margin: '60px auto 100px', textAlign: 'center' }}
     >
+      {/* Check icon */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
         style={{
-          width: 80, height: 80, borderRadius: '50%', background: '#dcfce7',
-          border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px',
+          width: 72, height: 72, borderRadius: '50%', background: '#dcfce7',
+          border: '2px solid #86efac', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', margin: '0 auto 20px',
         }}
       >
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </motion.div>
-      <h2 style={{ fontSize: '22px', fontWeight: 900, marginBottom: '8px' }}>Commande confirmée !</h2>
-      <p style={{ fontSize: '12px', color: 'var(--bem-gray-400)', marginBottom: '6px' }}>Numéro de commande :</p>
-      <p style={{
-        fontFamily: 'monospace', fontSize: '11px', padding: '6px 14px', borderRadius: '8px',
-        background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)',
-        color: 'var(--bem-gray-700)', marginBottom: '32px',
-      }}>
-        {orderId}
+
+      <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '8px', color: 'var(--bem-black)' }}>
+        Commande confirmée !
+      </h2>
+      <p style={{ fontSize: '13px', color: 'var(--bem-gray-400)', marginBottom: '6px' }}>
+        Un email de confirmation vous a été envoyé.
       </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
+
+      {/* Order ID */}
+      <div style={{
+        display: 'inline-block', margin: '6px 0 28px',
+        padding: '8px 18px', borderRadius: '8px',
+        background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)',
+      }}>
+        <span style={{ fontSize: '10px', color: 'var(--bem-gray-400)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+          Numéro de commande
+        </span>
+        <p style={{ margin: '2px 0 0', fontFamily: 'monospace', fontSize: '14px', fontWeight: 800, color: 'var(--bem-black)' }}>
+          #{orderId.slice(0, 8).toUpperCase()}
+        </p>
+      </div>
+
+      {/* Pickup info */}
+      <div style={{
+        background: '#fef9f0', border: '1px solid #fde68a', borderRadius: '12px',
+        padding: '20px 24px', marginBottom: '16px', textAlign: 'left' as const,
+      }}>
+        <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 800, color: 'var(--bem-black)', letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
+          📍 Lieu de récupération
+        </p>
+        <p style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700, color: 'var(--bem-black)' }}>
+          BEM Shop — Campus de Dakar
+        </p>
+        <p style={{ margin: 0, fontSize: '13px', color: 'var(--bem-gray-700)', lineHeight: 1.7 }}>
+          Université Cheikh Anta Diop (UCAD), Dakar<br/>
+          Lun – Ven : 08h00 – 18h00 · Sam : 09h00 – 14h00
+        </p>
+        <div style={{
+          marginTop: '12px', padding: '8px 12px', borderRadius: '6px',
+          background: '#fef3c7', fontSize: '12px', color: '#92400e', fontWeight: 600,
+        }}>
+          Présentez le numéro #{orderId.slice(0, 8).toUpperCase()} à la récupération
+        </div>
+      </div>
+
+      {/* Payment methods */}
+      <div style={{
+        background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)',
+        borderRadius: '12px', padding: '16px 24px', marginBottom: '28px', textAlign: 'left' as const,
+      }}>
+        <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 800, color: 'var(--bem-black)', letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
+          💳 Paiement à la récupération
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
+          {['Espèces', 'Orange Money', 'Wave', 'Free Money'].map((m) => (
+            <span key={m} style={{
+              padding: '5px 12px', borderRadius: '20px',
+              background: '#fff', border: '1px solid var(--bem-gray-100)',
+              fontSize: '12px', fontWeight: 600, color: 'var(--bem-black)',
+            }}>{m}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* CTAs */}
+      <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '12px', justifyContent: 'center' }}>
         <Link href="/compte" style={{
-          padding: '12px 28px', borderRadius: '99px', background: 'var(--bem-black)',
+          padding: '13px 28px', borderRadius: '99px', background: 'var(--bem-black)',
           color: '#fff', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
         }}>
           Voir mes commandes
         </Link>
         <Link href="/catalogue" style={{
-          padding: '12px 28px', borderRadius: '99px',
+          padding: '13px 28px', borderRadius: '99px',
           border: '1.5px solid var(--bem-gray-100)', color: 'var(--bem-black)',
           fontSize: '13px', fontWeight: 700, textDecoration: 'none',
         }}>
@@ -271,7 +329,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
       <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {[
           { label: 'Sous-total', val: fmt(subtotal) },
-          { label: 'Livraison', val: 'Gratuite', green: true },
+          { label: 'Récupération', val: 'Sur campus', green: true },
         ].map(({ label, val, green }) => (
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
             <span style={{ color: 'var(--bem-gray-700)' }}>{label}</span>
@@ -358,7 +416,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           {[
             { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: 'Paiement sécurisé' },
-            { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>, label: 'Retours 7 jours' },
+            { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>, label: 'Retour 7 jours' },
           ].map((b) => (
             <div key={b.label} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
@@ -372,8 +430,14 @@ function Summary({ subtotal, loading, error, onCheckout }: {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '10px', color: 'var(--bem-gray-400)', letterSpacing: '0.05em' }}>
-          Orange Money · Wave · Free · Carte bancaire
+          Espèces · Orange Money · Wave · Free Money
         </p>
+        <div style={{ padding: '12px 16px', borderRadius: '8px', background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)' }}>
+          <p style={{ margin: 0, fontSize: '11px', color: 'var(--bem-gray-700)', textAlign: 'center', lineHeight: 1.6 }}>
+            <span style={{ fontWeight: 700 }}>📍 Paiement à la récupération</span><br/>
+            Campus BEM · UCAD, Dakar
+          </p>
+        </div>
       </div>
     </div>
   );

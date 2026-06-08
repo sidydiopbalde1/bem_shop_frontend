@@ -184,12 +184,9 @@ export default function ContactPage() {
 
       {/* ── Main content ──────────────────────────────────── */}
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(20px, 5vw, 48px)' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 420px',
-          gap: 48, alignItems: 'start',
-        }}
-          className="max-lg:grid-cols-1"
+        <div
+          style={{ gap: 48, alignItems: 'start' }}
+          className="grid grid-cols-1 lg:grid-cols-[1fr_420px]"
         >
 
           {/* ── Form ── */}
@@ -250,7 +247,7 @@ export default function ContactPage() {
                 )}
 
                 {/* Nom + Email */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }} className="max-sm:grid-cols-1">
+                <div style={{ gap: 14 }} className="grid grid-cols-1 sm:grid-cols-2">
                   <div>
                     <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--bem-gray-400)', marginBottom: 7 }}>
                       Nom complet *
