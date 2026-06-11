@@ -50,8 +50,7 @@ export default function Navbar() {
         <div className="hidden md:flex mx-auto px-6 items-center gap-6" style={{ maxWidth: '1400px', height: '72px' }}>
           <Link href="/" className="flex-shrink-0 group" aria-label="BEM Dakar">
             <Image src="/images/bem_logo.png" alt="BEM Dakar" width={88} height={40} priority unoptimized
-              style={{ height: '38px', width: 'auto' }}
-              className="transition-transform duration-300 group-hover:scale-[1.03]" />
+              className="h-[38px] w-auto transition-transform duration-300 group-hover:scale-[1.03]" />
           </Link>
 
           <nav className="flex items-center gap-8 flex-1">
@@ -97,7 +96,7 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-3 px-4" style={{ height: '58px' }}>
           <Link href="/" className="flex-shrink-0" aria-label="BEM Dakar">
             <Image src="/images/bem_logo.png" alt="BEM Dakar" width={80} height={36} priority unoptimized
-              style={{ height: '30px', width: 'auto' }} />
+              className="h-[30px] w-auto" />
           </Link>
 
           <SearchWithSuggestions variant="mobile" />

@@ -262,7 +262,7 @@ function OrderConfirmed({ orderId }: { orderId: string }) {
           BEM Shop — Campus de Dakar
         </p>
         <p style={{ margin: 0, fontSize: '13px', color: 'var(--bem-gray-700)', lineHeight: 1.7 }}>
-          Université Cheikh Anta Diop (UCAD), Dakar<br/>
+          Sacré Coeur 3 Pyrotechnique, Dakar<br/>
           Lun – Ven : 08h00 – 18h00 · Sam : 09h00 – 14h00
         </p>
         <div style={{

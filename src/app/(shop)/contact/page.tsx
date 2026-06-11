@@ -16,14 +16,14 @@ const SUBJECTS = [
 const INFOS = [
   {
     label: 'E-mail',
-    value: 'boutique@bem-dakar.sn',
+    value: 'boutique@bem.sn',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
         <polyline points="22,6 12,13 2,6"/>
       </svg>
     ),
-    href: 'mailto:boutique@bem-dakar.sn',
+    href: 'mailto:boutique@bem.sn',
   },
   {
     label: 'Campus',
@@ -46,7 +46,7 @@ const INFOS = [
         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
       </svg>
     ),
-    href: 'https://www.instagram.com/bemdakar.goodies',
+    href: 'https://www.instagram.com/bemdkr',
   },
   {
     label: 'Délai de réponse',
