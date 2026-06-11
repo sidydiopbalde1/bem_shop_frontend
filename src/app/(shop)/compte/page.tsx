@@ -214,11 +214,10 @@ function RegisterForm({ onSwitch }: { onSwitch:()=>void }) {
 function AuthPage() {
   const [tab, setTab] = useState<'login'|'register'>('login');
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', minHeight:'100dvh' }}
-      className="max-md:grid-cols-1">
+    <div className="auth-layout">
 
       {/* Left — branding (masqué sur mobile) */}
-      <div className="hidden md:flex flex-col justify-between"
+      <div className="auth-branding"
         style={{ background:'var(--bem-black)', padding:'52px', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', top:'-80px', right:'-60px', width:'320px', height:'320px', borderRadius:'50%', background:'rgba(204,31,39,.12)', pointerEvents:'none' }} />
         <div style={{ position:'absolute', bottom:'-60px', left:'-40px', width:'220px', height:'220px', borderRadius:'50%', background:'rgba(204,31,39,.08)', pointerEvents:'none' }} />
@@ -278,7 +277,7 @@ function AuthPage() {
 
           {/* Badge mobile uniquement */}
           <Fade>
-            <div className="flex md:hidden items-center gap-2 mb-6">
+            <div className="auth-mobile-badge" style={{ display:'none', alignItems:'center', gap:'8px', marginBottom:'24px' }}>
               <div style={{ width:34, height:34, borderRadius:9, background:'var(--bem-red)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -342,6 +341,30 @@ function AuthPage() {
           </Fade>
         </div>
       </div>
+
+      <style>{`
+        .auth-layout {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          min-height: 100dvh;
+        }
+        .auth-branding {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        @media (max-width: 767px) {
+          .auth-layout {
+            grid-template-columns: 1fr;
+          }
+          .auth-branding {
+            display: none;
+          }
+          .auth-mobile-badge {
+            display: flex !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -352,6 +375,7 @@ function OrderCard({ order }: { order:Order }) {
   const total = typeof order.totalAmount==='string' ? parseFloat(order.totalAmount) : order.totalAmount;
   const totalQty = order.items.reduce((s,i)=>s+i.quantity,0);
   return (
+    <Link href={`/orders/${order.id}`} style={{ textDecoration:'none', display:'block' }}>
     <div style={{ background:'#fff', border:'1px solid var(--bem-gray-100)', borderRadius:'14px', overflow:'hidden', transition:'box-shadow .2s, transform .2s' }}
       onMouseEnter={(e) => { const el=e.currentTarget; el.style.boxShadow='0 4px 20px rgba(0,0,0,.08)'; el.style.transform='translateY(-2px)'; }}
       onMouseLeave={(e) => { const el=e.currentTarget; el.style.boxShadow='none'; el.style.transform='none'; }}
@@ -392,6 +416,7 @@ function OrderCard({ order }: { order:Order }) {
         <p style={{ fontSize:'14px', fontWeight:800, flexShrink:0 }}>{fmt(total)}</p>
       </div>
     </div>
+    </Link>
   );
 }
 

@@ -435,7 +435,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
         <div style={{ padding: '12px 16px', borderRadius: '8px', background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)' }}>
           <p style={{ margin: 0, fontSize: '11px', color: 'var(--bem-gray-700)', textAlign: 'center', lineHeight: 1.6 }}>
             <span style={{ fontWeight: 700 }}>📍 Paiement à la récupération</span><br/>
-            Campus BEM · UCAD, Dakar
+            Campus BEM · Sacré-Cœur 3, Dakar
           </p>
         </div>
       </div>

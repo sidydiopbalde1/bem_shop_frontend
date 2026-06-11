@@ -38,7 +38,7 @@ const INFOS = [
   },
   {
     label: 'Réseaux sociaux',
-    value: '@bemdakar.goodies',
+    value: 'bemdkr',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
         <rect x="2" y="2" width="20" height="20" rx="5"/>
@@ -253,7 +253,7 @@ export default function ContactPage() {
                       Nom complet *
                     </label>
                     <input
-                      type="text" required placeholder="Fatou Diallo"
+                      type="text" required placeholder="Fama Diallo"
                       value={form.name} onChange={set('name')}
                       style={inputStyle(focused === 'name')}
                       onFocus={() => setFocused('name')}
@@ -265,7 +265,7 @@ export default function ContactPage() {
                       Adresse e-mail *
                     </label>
                     <input
-                      type="email" required placeholder="fatou@exemple.sn"
+                      type="email" required placeholder="fama@exemple.sn"
                       value={form.email} onChange={set('email')}
                       style={inputStyle(focused === 'email')}
                       onFocus={() => setFocused('email')}
