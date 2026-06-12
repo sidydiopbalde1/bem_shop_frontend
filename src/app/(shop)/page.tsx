@@ -4,7 +4,7 @@ import HeroSection from '@/components/shop/HeroSection';
 import ProductGrid from '@/components/shop/ProductGrid';
 import type { ProductsResponse } from '@/lib/types/shop.types';
 
-export const metadata: Metadata = { title: 'Accueil — BEM Dakar Goodies' };
+export const metadata: Metadata = { title: 'BEM Dakar E-boutique' };
 
 async function getFeaturedProducts() {
   try {

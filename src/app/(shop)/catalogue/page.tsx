@@ -163,7 +163,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
             </FilterSection>
           )}
 
-          <FilterSection title="Disponibilité">
+          {/* <FilterSection title="Disponibilité">
             <FilterLink label="En stock" href={`/catalogue?${search ? `search=${search}&` : ''}inStock=true`} />
             <FilterLink label="Tous les produits" href={`/catalogue${search ? `?search=${search}` : ''}`} />
           </FilterSection>
@@ -172,7 +172,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
             <FilterLink label="Nouveautés"  href={buildHref(1).replace('page=1', '') + '&sort=new'} />
             <FilterLink label="Prix croissant" href={buildHref(1).replace('page=1', '') + '&sort=price_asc'} />
             <FilterLink label="Prix décroissant" href={buildHref(1).replace('page=1', '') + '&sort=price_desc'} />
-          </FilterSection>
+          </FilterSection> */}
         </aside>
 
         {/* Grid */}

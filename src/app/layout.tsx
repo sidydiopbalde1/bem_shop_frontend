@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: { template: '%s — BEM Dakar Goodies', default: 'BEM Dakar Goodies' },
+  title: { template: '%s — BEM Dakar E-boutique', default: 'BEM Dakar E-boutique' },
   description: 'La boutique officielle BEM Dakar.',
 };
 

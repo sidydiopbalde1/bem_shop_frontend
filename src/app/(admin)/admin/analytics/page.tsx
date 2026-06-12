@@ -811,7 +811,7 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Endpoints reference */}
-            <div style={{
+            {/* <div style={{
               background: '#fff', borderRadius: 20, border: '1px solid var(--bem-gray-100)',
               padding: '20px 24px',
             }}>
@@ -837,7 +837,7 @@ export default function AnalyticsPage() {
                   </code>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </Appear>
       </div>
