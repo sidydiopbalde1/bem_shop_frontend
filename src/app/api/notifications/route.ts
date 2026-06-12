@@ -41,7 +41,7 @@ async function sendEmail(notification: StockNotification) {
     });
 
     await transporter.sendMail({
-      from: `"BEM Boutique" <${user}>`,
+      from: `"BEM Shop" <${user}>`,
       to: adminEmail,
       subject: `⚠️ Alerte stock — ${notification.productName}`,
       html: `

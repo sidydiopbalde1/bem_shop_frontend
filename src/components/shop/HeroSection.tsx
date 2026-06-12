@@ -11,7 +11,7 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 const SLIDES = [
   {
     id: 1,
-    image: '/images/hero-bg.jpg',
+    image: '/images/hero-bg.png',
     title: 'BEM Dakar Collection',
     subtitle: 'L\'excellence s\'affiche',
     cta: 'Découvrir la collection',
@@ -80,7 +80,7 @@ export default function HeroSection() {
                       transition={{ duration: 0.6, delay: 0.2 }}
                       className="text-white/90 text-sm md:text-lg font-medium tracking-wider uppercase mb-3"
                     >
-                      {slide.subtitle}
+                      {/* {slide.subtitle} */}
                     </motion.p>
                     <motion.h1
                       initial={{ opacity: 0, y: 20 }}
@@ -89,7 +89,7 @@ export default function HeroSection() {
                       transition={{ duration: 0.6, delay: 0.4 }}
                       className="text-4xl md:text-6xl font-display font-bold text-white mb-8 drop-shadow-lg"
                     >
-                      {slide.title}
+                      {/* {slide.title} */}
                     </motion.h1>
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}

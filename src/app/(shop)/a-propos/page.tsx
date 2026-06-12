@@ -31,7 +31,7 @@ const VALUES = [
   },
   {
     title: 'Communauté d\'abord',
-    desc: 'Étudiants, alumni, parents, équipe pédagogique — la boutique BEM appartient à toute la famille. Les bénéfices soutiennent les activités associatives.',
+    desc: 'Étudiants, alumni, parents, équipe pédagogique, BEM Shop appartient à toute la famille. Les bénéfices soutiennent les activités associatives.',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -90,8 +90,8 @@ export default function AProposPage() {
           <p style={{
             fontSize: 16, color: 'rgba(255,255,255,0.6)',
             lineHeight: 1.7, maxWidth: 560,
-          }}>
-            BEM Dakar Goodies est né de la volonté simple et sincère de porter haut les couleurs
+          }}> 
+            BEM Shop est né de la volonté simple et sincère de porter haut les couleurs
             de notre école. Ce que vous achetez ici, c'est bien plus qu'un vêtement —
             c'est un morceau de notre communauté.
           </p>
@@ -99,7 +99,7 @@ export default function AProposPage() {
       </div>
 
       {/* ── Stats ────────────────────────────────────────────── */}
-      <div style={{ background: 'var(--bem-gray-50)', borderBottom: '1px solid var(--bem-gray-100)' }}>
+      {/* <div style={{ background: 'var(--bem-gray-50)', borderBottom: '1px solid var(--bem-gray-100)' }}>
         <div className="bem-container section-pad" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
@@ -122,7 +122,7 @@ export default function AProposPage() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* ── Mission ──────────────────────────────────────────── */}
       <div className="bem-container section-pad">
@@ -144,7 +144,7 @@ export default function AProposPage() {
               Donner une voix visuelle à la communauté BEM
             </h2>
             <p style={{ fontSize: 14, color: 'var(--bem-gray-700)', lineHeight: 1.75, marginBottom: 16 }}>
-              BEM — Business, Économie & Management — est bien plus qu'une école de gestion.
+              BEM - Business, School of Management est bien plus qu'une école de gestion.
               C'est un réseau, une famille, une culture. Notre boutique est le reflet tangible
               de cet esprit collectif.
             </p>
@@ -189,7 +189,7 @@ export default function AProposPage() {
             </p>
             <div style={{ height: 1, background: 'rgba(255,255,255,0.1)' }} />
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
-              Le bureau associatif étudiant — moteur de la vie du campus BEM Dakar depuis 2021.
+              Le bureau associatif étudiant, moteur de la vie du campus BEM Dakar depuis 2021.
             </p>
           </div>  
         </div>
