@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import ProductGrid from '@/components/shop/ProductGrid';
 import CatalogueFilters from '@/components/shop/CatalogueFilters';
+import FadeIn from '@/components/ui/FadeIn';
 import type { ProductsResponse, Category } from '@/lib/types/shop.types';
 
 export const metadata: Metadata = { title: 'Catalogue — BEM Dakar' };
@@ -18,7 +19,6 @@ async function getCategories(): Promise<Category[]> {
     const res = await fetch(`${process.env.API_URL}/categories`, { next: { revalidate: 300 } });
     if (!res.ok) return [];
     const json = await res.json();
-    // Support both array response and { data: [...] }
     return Array.isArray(json) ? json : (json.data ?? []);
   } catch {
     return [];
@@ -135,15 +135,17 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
             </form>
           </div>
 
-          {/* Category tabs */}
-          <CatalogueFilters categories={categories} activeCategory={category} search={search} sort={sort} />
+          {/* Category pills (mobile: horizontal scroll / desktop: also visible) */}
+          <div style={{ paddingBottom: '16px' }}>
+            <CatalogueFilters categories={categories} activeCategory={category} search={search} sort={sort} />
+          </div>
         </div>
       </div>
 
       {/* ── Content ── */}
-      <div className="catalogue-body">
+      <div className="catalogue-body" style={{ paddingTop: '28px' }}>
 
-        {/* Sidebar */}
+        {/* Sidebar — hidden on mobile, card on desktop */}
         <aside className="catalogue-sidebar">
           {categories.length > 0 && (
             <FilterSection title="Catégories">
@@ -162,17 +164,6 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
               ))}
             </FilterSection>
           )}
-
-          {/* <FilterSection title="Disponibilité">
-            <FilterLink label="En stock" href={`/catalogue?${search ? `search=${search}&` : ''}inStock=true`} />
-            <FilterLink label="Tous les produits" href={`/catalogue${search ? `?search=${search}` : ''}`} />
-          </FilterSection>
-
-          <FilterSection title="Trier par">
-            <FilterLink label="Nouveautés"  href={buildHref(1).replace('page=1', '') + '&sort=new'} />
-            <FilterLink label="Prix croissant" href={buildHref(1).replace('page=1', '') + '&sort=price_asc'} />
-            <FilterLink label="Prix décroissant" href={buildHref(1).replace('page=1', '') + '&sort=price_desc'} />
-          </FilterSection> */}
         </aside>
 
         {/* Grid */}
@@ -204,47 +195,42 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '48px' }}
-              aria-label="Pagination">
+            <FadeIn>
+              <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '48px' }}
+                aria-label="Pagination">
 
-              {/* Prev */}
-              {currentPage > 1 && (
-                <Link href={buildHref(currentPage - 1)} style={pgStyle(false)}>
-                  ‹
-                </Link>
-              )}
+                {currentPage > 1 && (
+                  <Link href={buildHref(currentPage - 1)} style={pgStyle(false)}>‹</Link>
+                )}
 
-              {/* Pages */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                const show =
-                  p === 1 || p === totalPages ||
-                  Math.abs(p - currentPage) <= 1;
-                const isEllipsis =
-                  (p === 2 && currentPage > 4) ||
-                  (p === totalPages - 1 && currentPage < totalPages - 3);
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                  const show =
+                    p === 1 || p === totalPages ||
+                    Math.abs(p - currentPage) <= 1;
+                  const isEllipsis =
+                    (p === 2 && currentPage > 4) ||
+                    (p === totalPages - 1 && currentPage < totalPages - 3);
 
-                if (!show && !isEllipsis) return null;
-                if (isEllipsis && !show) {
+                  if (!show && !isEllipsis) return null;
+                  if (isEllipsis && !show) {
+                    return (
+                      <span key={p} style={{ ...pgStyle(false), cursor: 'default', color: 'var(--bem-gray-400)' }}>
+                        …
+                      </span>
+                    );
+                  }
                   return (
-                    <span key={p} style={{ ...pgStyle(false), cursor: 'default', color: 'var(--bem-gray-400)' }}>
-                      …
-                    </span>
+                    <Link key={p} href={buildHref(p)} style={pgStyle(p === currentPage)}>
+                      {p}
+                    </Link>
                   );
-                }
-                return (
-                  <Link key={p} href={buildHref(p)} style={pgStyle(p === currentPage)}>
-                    {p}
-                  </Link>
-                );
-              })}
+                })}
 
-              {/* Next */}
-              {currentPage < totalPages && (
-                <Link href={buildHref(currentPage + 1)} style={pgStyle(false)}>
-                  ›
-                </Link>
-              )}
-            </nav>
+                {currentPage < totalPages && (
+                  <Link href={buildHref(currentPage + 1)} style={pgStyle(false)}>›</Link>
+                )}
+              </nav>
+            </FadeIn>
           )}
         </div>
       </div>
@@ -267,14 +253,14 @@ function pgStyle(active: boolean): React.CSSProperties {
 
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: '24px' }}>
+    <div style={{ marginBottom: '16px' }}>
       <p style={{
         fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em',
         textTransform: 'uppercase', color: 'var(--bem-gray-400)', marginBottom: '10px',
       }}>
         {title}
       </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {children}
       </div>
     </div>
@@ -287,9 +273,22 @@ function FilterLink({ label, href, active }: { label: string; href: string; acti
       fontSize: '12px',
       color: active ? 'var(--bem-red)' : 'var(--bem-gray-700)',
       fontWeight: active ? 700 : 400,
-      textDecoration: 'none', padding: '4px 0', display: 'block',
+      textDecoration: 'none',
+      padding: '5px 8px',
+      borderRadius: '6px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: active ? 'rgba(204,31,39,0.06)' : 'transparent',
+      transition: 'background .15s, color .15s',
     }}
-      className="hover:text-[var(--bem-red)] transition-colors">
+      className="hover:text-[var(--bem-red)] hover:bg-[rgba(204,31,39,0.04)]">
+      {active && (
+        <span style={{
+          display: 'inline-block', width: '5px', height: '5px',
+          borderRadius: '50%', background: 'var(--bem-red)', flexShrink: 0,
+        }} />
+      )}
       {label}
     </Link>
   );

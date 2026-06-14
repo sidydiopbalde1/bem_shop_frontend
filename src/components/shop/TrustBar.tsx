@@ -1,3 +1,7 @@
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+
 const ITEMS = [
   {
     icon: (
@@ -38,24 +42,38 @@ const ITEMS = [
   },
 ];
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
+};
+
 export default function TrustBar() {
+  const shouldReduce = useReducedMotion();
+
   return (
     <div
       className="w-full border-t border-b border-[var(--bem-gray-100)]"
       style={{ background: 'var(--bem-gray-50)' }}
     >
-      <div
-        className="mx-auto px-6"
-        style={{
-          maxWidth: '1400px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: '0',
-        }}
+      <motion.div
+        className="trustbar-grid mx-auto px-6"
+        style={{ maxWidth: '1400px' }}
+        variants={shouldReduce ? undefined : containerVariants}
+        initial={shouldReduce ? undefined : 'hidden'}
+        whileInView={shouldReduce ? undefined : 'visible'}
+        viewport={{ once: true, margin: '-80px' }}
       >
         {ITEMS.map((item, i) => (
-          <div
+          <motion.div
             key={i}
+            variants={shouldReduce ? undefined : itemVariants}
             className="flex items-center gap-3 py-4 px-4"
             style={{
               borderRight: i < ITEMS.length - 1 ? '1px solid var(--bem-gray-100)' : 'none',
@@ -66,9 +84,9 @@ export default function TrustBar() {
               <p className="text-[12px] font-bold text-[var(--bem-black)] leading-tight">{item.label}</p>
               <p className="text-[11px] text-[var(--bem-gray-400)] mt-0.5">{item.sub}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

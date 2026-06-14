@@ -52,7 +52,7 @@ export default function HeroSection() {
   }, [emblaApi, onSelect]);
 
   return (
-    <section className="relative w-full h-[65vh] min-h-[500px] overflow-hidden bg-black group">
+    <section className="relative w-full h-[60vh] min-h-[500px] overflow-hidden bg-black group">
       <div className="overflow-hidden h-full" ref={emblaRef}>
         <div className="flex h-full touch-pan-y">
           {SLIDES.map((slide, index) => (

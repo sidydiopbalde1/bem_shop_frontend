@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useCart } from '@/lib/CartContext';
 
 interface Product {
@@ -13,10 +14,13 @@ interface Product {
   imageUrls: string[];
 }
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function ProductCard({ product }: { product: Product }) {
   const [adding, setAdding] = useState(false);
   const [done, setDone]     = useState(false);
   const { addItem }         = useCart();
+  const shouldReduce        = useReducedMotion();
 
   const isSoldOut = product.stock === 0;
   const price     = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
@@ -39,7 +43,12 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <div className="group flex flex-col">
+    <motion.div
+      className="product-card-hover group flex flex-col"
+      whileHover={shouldReduce ? {} : { y: -4 }}
+      transition={{ duration: 0.25, ease: EASE }}
+      style={{ willChange: 'transform', borderRadius: '12px' }}
+    >
       {/* Image */}
       <Link href={`/produits/${product.id}`}>
         <div
@@ -51,7 +60,7 @@ export default function ProductCard({ product }: { product: Product }) {
               src={product.imageUrls[0]}
               alt={product.name}
               fill
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,20vw"
             />
           ) : (
@@ -88,11 +97,13 @@ export default function ProductCard({ product }: { product: Product }) {
         </Link>
 
         {/* Bouton ajouter au panier */}
-        <button
+        <motion.button
           onClick={handleAdd}
           disabled={isSoldOut || adding}
-          className="w-full transition-all duration-200"
+          whileTap={(!isSoldOut && !shouldReduce) ? { scale: 0.96 } : {}}
+          className="w-full transition-colors duration-200"
           style={{
+            minHeight: '44px',
             padding: '9px 0',
             borderRadius: '8px',
             fontSize: '11px',
@@ -116,8 +127,8 @@ export default function ProductCard({ product }: { product: Product }) {
             : adding
             ? '…'
             : '+ Ajouter au panier'}
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }

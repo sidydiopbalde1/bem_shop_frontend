@@ -5,6 +5,7 @@ import type { Product } from '@/lib/types/shop.types';
 import AddToCartButton from '@/components/shop/AddToCartButton';
 import ProductGallery from '@/components/shop/ProductGallery';
 import ProductCard from '@/components/shop/ProductCard';
+import FadeIn from '@/components/ui/FadeIn';
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -46,84 +47,78 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const similarProducts = await getSimilarProducts(product.category.slug, product.id);
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-10 md:py-16">
+    <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-10 md:py-14">
 
       {/* Breadcrumb */}
-      <nav className="fade-up flex items-center gap-2 mb-10 text-[13px] text-gray-500 font-medium tracking-wide">
-        <Link href="/" className="hover:text-bem-red transition-colors">Accueil</Link>
-        <span>/</span>
-        <Link href="/catalogue" className="hover:text-bem-red transition-colors">Catalogue</Link>
-        <span>/</span>
-        <span className="text-black">{product.name}</span>
-      </nav>
+      <FadeIn>
+        <nav className="flex items-center gap-2 mb-10 text-[13px] text-gray-500 font-medium tracking-wide">
+          <Link href="/" className="hover:text-bem-red transition-colors">Accueil</Link>
+          <span>/</span>
+          <Link href="/catalogue" className="hover:text-bem-red transition-colors">Catalogue</Link>
+          <span>/</span>
+          <span className="text-black">{product.name}</span>
+        </nav>
+      </FadeIn>
 
-      {/* ── 2-column layout: image gauche / infos droite ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-20 items-start">
+      {/* ── 2-column layout: galerie gauche / infos droite ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-start">
 
-        {/* ── LEFT: Images ── */}
-        <div className="fade-up flex justify-center" style={{ animationDelay: '0.1s' }}>
+        {/* ── LEFT: Galerie ── */}
+        <FadeIn direction="left" delay={0.05}>
           <ProductGallery
             images={product.imageUrls}
             name={product.name}
             isOutOfStock={isOutOfStock}
           />
-        </div>
+        </FadeIn>
 
-        {/* ── RIGHT: Product info ── */}
-        <div className="sticky top-28 flex flex-col items-center gap-8 text-center">
+        {/* ── RIGHT: Infos produit ── */}
+        <div className="md:sticky md:top-28 flex flex-col items-center gap-8">
 
-          <div className="w-full space-y-4">
+          <div className="w-full space-y-4" style={{ textAlign: 'center' }}>
             {/* Category badge */}
-            <div className="fade-up flex justify-center" style={{ animationDelay: '0.2s' }}>
+            <FadeIn delay={0.15} className="w-full flex justify-center">
               <span className="inline-block uppercase font-bold text-[11px] tracking-[0.2em] text-bem-red bg-bem-red/10 px-3 py-1.5 rounded-full">
                 {product.category.name}
               </span>
-            </div>
+            </FadeIn>
 
             {/* Name */}
-            <h1 className="fade-up font-display text-4xl md:text-5xl font-extrabold text-black leading-[1.1]" style={{ animationDelay: '0.25s' }}>
-              {product.name}
-            </h1>
+            <FadeIn delay={0.2} className="w-full">
+              <h1 className="font-display text-4xl md:text-5xl font-extrabold text-black leading-[1.1] text-center">
+                {product.name}
+              </h1>
+            </FadeIn>
 
             {/* Price */}
-            <p className="fade-up text-2xl font-bold text-black" style={{ animationDelay: '0.3s' }}>
-              {formattedPrice}
-            </p>
+            <FadeIn delay={0.25} className="w-full">
+              <p className="text-2xl font-bold text-black text-center">{formattedPrice}</p>
+            </FadeIn>
           </div>
 
-          <hr className="fade-up w-full border-gray-100" style={{ animationDelay: '0.35s' }} />
+          <FadeIn delay={0.3} className="w-full">
+            <hr className="w-full border-gray-100" />
+          </FadeIn>
 
           {/* Add to cart */}
-          <div className="fade-up w-full" style={{ animationDelay: '0.4s' }}>
+          <FadeIn delay={0.35} className="w-full">
             <AddToCartButton
               productId={product.id}
               isOutOfStock={isOutOfStock}
               product={{ id: product.id, name: product.name, price: product.price, imageUrls: product.imageUrls }}
             />
-          </div>
-
-          {/* Guarantees */}
-          {/* <div className="fade-up grid grid-cols-3 gap-4 pt-6" style={{ animationDelay: '0.45s' }}>
-            {[
-              { icon: '🚚', label: 'Livraison express' },
-              { icon: '↩️', label: 'Retour sous 7j' },
-              { icon: '🔒', label: 'Paiement 100% electronique' },
-            ].map((g) => (
-              <div key={g.label} className="flex flex-col items-center justify-center text-center gap-2 p-4 rounded-2xl bg-gray-50 border border-gray-100/50">
-                <span className="text-2xl">{g.icon}</span>
-                <span className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">{g.label}</span>
-              </div>
-            ))}
-          </div> */}
+          </FadeIn>
 
           {/* Description */}
           {product.description && (
-            <div className="fade-up w-full pt-12 border-t border-gray-100 text-left" style={{ animationDelay: '0.5s' }}>
-              <h3 className="text-sm font-bold uppercase tracking-widest text-black mb-5">Description</h3>
-              <p className="text-[15px] leading-relaxed text-gray-600 whitespace-pre-line">
-                {product.description}
-              </p>
-            </div>
+            <FadeIn delay={0.4} className="w-full">
+              <div className="w-full pt-8 border-t border-gray-100 text-left">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-black mb-5">Description</h3>
+                <p className="text-[15px] leading-relaxed text-gray-600 whitespace-pre-line">
+                  {product.description}
+                </p>
+              </div>
+            </FadeIn>
           )}
         </div>
       </div>
@@ -131,9 +126,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       {/* ── Produits similaires ── */}
       {similarProducts.length > 0 && (
         <section className="mt-20 pt-12 border-t border-gray-100">
-          <h2 className="fade-up font-display text-2xl md:text-3xl font-extrabold text-black mb-8">
-            Produits similaires
-          </h2>
+          <FadeIn>
+            <h2 className="font-display text-2xl md:text-3xl font-extrabold text-black mb-8">
+              Produits similaires
+            </h2>
+          </FadeIn>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {similarProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
