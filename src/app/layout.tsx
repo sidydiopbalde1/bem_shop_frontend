@@ -47,6 +47,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@bemdkr',
   },
+   verification: {
+    google: 'XRH8gwfKvL1UICnfWlPO2GYuReXHmjfXEdj5XuuYEyc', // colle le code donné par Search Console
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
