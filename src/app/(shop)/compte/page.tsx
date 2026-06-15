@@ -262,7 +262,7 @@ function AuthPage() {
         </div>
 
         <Fade delay={200}>
-          <p style={{ color:'rgba(255,255,255,.2)', fontSize:'11px' }}>© 2026 BEM Dakar Goodies</p>
+          <p style={{ color:'rgba(255,255,255,.2)', fontSize:'11px' }}>© 2026 BEM Shop</p>
         </Fade>
       </div>
 
@@ -283,7 +283,7 @@ function AuthPage() {
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                 </svg>
               </div>
-              <span style={{ fontSize:14, fontWeight:700, color:'var(--bem-black)' }}>BEM Dakar Goodies</span>
+              <span style={{ fontSize:14, fontWeight:700, color:'var(--bem-black)' }}>BEM Shop</span>
             </div>
           </Fade>
 

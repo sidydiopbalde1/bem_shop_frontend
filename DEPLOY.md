@@ -1,4 +1,4 @@
-# Guide de déploiement — BEM Dakar Goodies (Next.js 16)
+# Guide de déploiement — BEM Shop (Next.js 16)
 
 > Front-end Next.js 16 / React 19 / Tailwind CSS v4.  
 > Deux modes couverts : **déploiement natif** et **déploiement Dockerisé** sur un VPS Ubuntu 22.04+.

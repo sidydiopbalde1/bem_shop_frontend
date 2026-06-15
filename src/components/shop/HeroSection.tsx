@@ -20,7 +20,7 @@ const SLIDES = [
   {
     id: 2,
     image: '/images/hero-bg1.jpg',
-    title: 'Nouvelle Saison',
+    title: 'Nouvelle Collection',
     subtitle: 'Affichez vos couleurs',
     cta: 'Voir les nouveautés',
     link: '/catalogue',
@@ -89,7 +89,7 @@ export default function HeroSection() {
                       transition={{ duration: 0.6, delay: 0.4 }}
                       className="text-4xl md:text-6xl font-display font-bold text-white mb-8 drop-shadow-lg"
                     >
-                      {/* {slide.title} */}
+                      {slide.title}
                     </motion.h1>
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}

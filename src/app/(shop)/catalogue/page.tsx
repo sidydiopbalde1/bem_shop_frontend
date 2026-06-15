@@ -5,7 +5,19 @@ import CatalogueFilters from '@/components/shop/CatalogueFilters';
 import FadeIn from '@/components/ui/FadeIn';
 import type { ProductsResponse, Category } from '@/lib/types/shop.types';
 
-export const metadata: Metadata = { title: 'Catalogue — BEM Dakar' };
+export async function generateMetadata(): Promise<Metadata> {
+  const categories = await getCategories();
+  const description =
+    categories.length > 0
+      ? `Explorez toute la collection BEM Dakar : ${categories.map((c) => c.name).join(', ')}. Livraison rapide au Sénégal.`.slice(0, 160)
+      : 'Explorez toute la collection BEM Dakar. Goodies, accessoires et produits officiels. Livraison rapide au Sénégal.';
+  return {
+    title: 'Catalogue',
+    description,
+    alternates: { canonical: '/catalogue' },
+    openGraph: { title: 'Catalogue — BEM Dakar', description, url: '/catalogue' },
+  };
+}
 
 type SearchParams = Promise<{
   page?:     string;

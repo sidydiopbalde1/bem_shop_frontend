@@ -31,7 +31,34 @@ async function getSimilarProducts(categorySlug: string, excludeId: string): Prom
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const product = await getProduct(id);
-  return { title: product?.name ?? 'Produit - BEM Dakar' };
+  if (!product) return { title: 'Produit introuvable' };
+
+  const rawDesc = product.description ?? '';
+  const description = rawDesc.length > 0
+    ? (rawDesc.length > 155 ? rawDesc.slice(0, 155).trimEnd() + '…' : rawDesc)
+    : `Découvrez ${product.name} sur la boutique officielle BEM Dakar.`;
+
+  const canonical = `/produits/${id}`;
+  const ogImage = product.imageUrls[0];
+
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: product.name,
+      description,
+      url: canonical,
+      type: 'website',
+      ...(ogImage && { images: [{ url: ogImage, alt: product.name }] }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description,
+      ...(ogImage && { images: [ogImage] }),
+    },
+  };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,8 +73,29 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const similarProducts = await getSimilarProducts(product.category.slug, product.id);
 
+  const jsonLd = {
+    '@context': 'https://schema.org' as const,
+    '@type': 'Product' as const,
+    name: product.name,
+    ...(product.description && { description: product.description }),
+    image: product.imageUrls,
+    offers: {
+      '@type': 'Offer' as const,
+      priceCurrency: 'XOF',
+      price: product.price,
+      availability: product.stock > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url: `https://boutique.bem.sn/produits/${product.id}`,
+    },
+  };
+
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-10 md:py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* Breadcrumb */}
       <FadeIn>

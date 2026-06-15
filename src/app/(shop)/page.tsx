@@ -7,7 +7,45 @@ import PromoBanner from '@/components/shop/PromoBanner';
 import FadeIn from '@/components/ui/FadeIn';
 import type { ProductsResponse } from '@/lib/types/shop.types';
 
-export const metadata: Metadata = { title: 'BEM Shop' };
+export const metadata: Metadata = {
+  title: 'BEM Shop',
+  description:
+    'Boutique officielle BEM Dakar. Découvrez notre sélection de goodies, vêtements et accessoires. Affichez vos couleurs, soutenez votre école. Livraison au Sénégal.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'BEM Shop — Goodies & Accessoires Officiels',
+    description:
+      'Boutique officielle BEM Shop. Goodies, vêtements et accessoires. Livraison au Sénégal.',
+    url: '/',
+    images: [{ url: '/images/hero-bg.png', alt: 'BEM Shop Collection' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BEM Shop — Goodies & Accessoires Officiels',
+    description: 'Boutique officielle BEM Shop. Livraison au Sénégal.',
+    images: ['/images/hero-bg.png'],
+  },
+};
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'BEM Dakar',
+  url: 'https://boutique.bem.sn',
+  logo: 'https://boutique.bem.sn/images/logo.png',
+  sameAs: [
+    'https://www.instagram.com/bemdkr/',
+    'https://www.tiktok.com/@bemdkr',
+    'https://www.facebook.com/bemdakar',
+    'https://www.linkedin.com/school/bemdakar/posts/?feedView=all',
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'boutique@bem.sn',
+    contactType: 'customer service',
+    availableLanguage: 'French',
+  },
+};
 
 async function getFeaturedProducts() {
   const apiUrl = process.env.API_URL;
@@ -31,6 +69,10 @@ export default async function HomePage() {
 
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
       <HeroSection />
 
       {/* ── Trust bar ── */}

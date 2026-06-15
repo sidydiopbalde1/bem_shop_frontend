@@ -81,7 +81,7 @@ export default function Footer() {
             gap: '1rem',
           }}
         >
-          <span style={{ fontSize: '0.75rem', color: 'var(--bem-gray-400)' }}>© 2026 BEM DAKAR GOODIES</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--bem-gray-400)' }}>© 2026 BEM Shop</span>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             {FOOTER_LINKS.map((l) => (
               <Link key={l.href} href={l.href} style={{ fontSize: '0.75rem', color: 'var(--bem-gray-400)', textDecoration: 'none', transition: 'color 0.15s' }}

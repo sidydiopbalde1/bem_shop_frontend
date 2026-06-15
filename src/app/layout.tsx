@@ -27,8 +27,26 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: { template: '%s — BEM Shop', default: 'BEM Dakar Shop' },
-  description: 'La boutique officielle BEM Dakar.',
+  metadataBase: new URL('https://boutique.bem.sn'),
+  title: {
+    template: '%s — BEM Dakar',
+    default: 'BEM Shop',
+  },
+  description:
+    'Boutique officielle BEM Dakar. Découvrez notre sélection de goodies, accessoires et produits BEM. Livraison rapide au Sénégal.',
+  keywords: [
+    'BEM Dakar', 'BEM Shop', 'boutique BEM', 'accessoires BEM',
+    'vêtements BEM', 'école de management Dakar', 'Sénégal', 'BEM shop',
+  ],
+  openGraph: {
+    siteName: 'BEM Shop',
+    locale: 'fr_SN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@bemdkr',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

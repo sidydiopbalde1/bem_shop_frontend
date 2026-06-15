@@ -1,7 +1,23 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: 'À propos — BEM Dakar Goodies' };
+export const metadata: Metadata = {
+  title: 'À propos',
+  description:
+    'BEM Shop est la boutique officielle de BEM Dakar. Découvrez notre histoire, nos valeurs et notre mission : donner une voix visuelle à la communauté BEM.',
+  alternates: { canonical: '/a-propos' },
+  openGraph: {
+    title: 'À propos — BEM Dakar',
+    description:
+      'BEM Shop est la boutique officielle de BEM Dakar. Notre mission : donner une voix visuelle à la communauté BEM.',
+    url: '/a-propos',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'À propos — BEM Dakar',
+    description: 'Boutique officielle BEM Dakar — notre histoire et nos valeurs.',
+  },
+};
 
 const STATS = [
   { value: '2+', label: 'Années d\'existence', sub: 'depuis 2023' },
