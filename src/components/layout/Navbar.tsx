@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, User, Home, LayoutGrid, Mail, Info } from 'lucide-react';
+import { ShoppingBag, User, Home, LayoutGrid, Mail, Info, CircleUser } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchWithSuggestions from './SearchWithSuggestions';
 import { useCart } from '@/lib/CartContext';
@@ -28,8 +28,6 @@ export default function Navbar() {
     window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
   }, []);
-
-  const initials = `${(user?.firstName ?? '').charAt(0)}${(user?.lastName ?? '').charAt(0)}`.toUpperCase();
 
   return (
     <>
@@ -69,8 +67,12 @@ export default function Navbar() {
             <Link href="/compte" aria-label="Mon compte"
               className="p-2 rounded-full hover:bg-[var(--bem-gray-50)] transition-colors">
               {user ? (
-                <span className="w-8 h-8 rounded-full bg-[var(--bem-black)] text-white flex items-center justify-center text-[11px] font-bold">
-                  {initials}
+                <span
+                  title={`${user.firstName} ${user.lastName}`}
+                  className="w-9 h-9 rounded-full flex items-center justify-center ring-2 ring-[var(--bem-red)] overflow-hidden"
+                  style={{ background: 'var(--bem-black)' }}
+                >
+                  <CircleUser size={36} strokeWidth={1.4} className="text-white" />
                 </span>
               ) : (
                 <User size={22} strokeWidth={1.8} className="text-[var(--bem-black)] hover:text-[var(--bem-red)] transition-colors" />
@@ -138,9 +140,14 @@ export default function Navbar() {
               style={{ color: active ? 'var(--bem-red)' : 'var(--bem-gray-400)', transition: 'color .15s' }}>
               {user ? (
                 <span
-                  className="flex items-center justify-center rounded-full text-white"
-                  style={{ width: 22, height: 22, fontSize: 8, fontWeight: 800, background: active ? 'var(--bem-red)' : 'var(--bem-black)', transition: 'background .15s' }}>
-                  {initials}
+                  className="rounded-full overflow-hidden"
+                  style={{
+                    width: 24, height: 24,
+                    background: active ? 'var(--bem-red)' : 'var(--bem-black)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background .15s',
+                  }}>
+                  <CircleUser size={22} strokeWidth={1.4} color="white" />
                 </span>
               ) : (
                 <User size={20} strokeWidth={active ? 2.4 : 1.8} />

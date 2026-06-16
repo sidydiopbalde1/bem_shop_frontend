@@ -201,7 +201,7 @@ export default function AProposPage() {
               fontFamily: 'var(--font-playfair), serif',
               fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1.3,
             }}>
-              "Représenter BEM,<br />c'est représenter<br />l'excellence africaine."
+              "BEM Dakar,<br />vous avez du talent,<br />nous lui donnons de la valeur."
             </p>
             <div style={{ height: 1, background: 'rgba(255,255,255,0.1)' }} />
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>

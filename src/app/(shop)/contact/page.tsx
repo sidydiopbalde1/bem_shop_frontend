@@ -71,10 +71,6 @@ const FAQ = [
     a: 'Les commandes sont traitées sous 48 h ouvrées. La livraison campus est disponible. Les délais de livraison externe varient de 3 à 7 jours ouvrés.',
   },
   {
-    q: 'Puis-je retourner un article ?',
-    a: 'Oui. Vous disposez de 14 jours après réception pour nous signaler tout défaut. Les retours sont pris en charge pour les articles défectueux.',
-  },
-  {
     q: 'Comment suivre ma commande ?',
     a: 'Connectez-vous à votre espace client sur la page "Mon compte" pour suivre l\'état de vos commandes en temps réel.',
   },

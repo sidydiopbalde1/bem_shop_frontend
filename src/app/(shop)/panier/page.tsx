@@ -197,7 +197,7 @@ function CartRow({ item, onRemove, onQty, removing }: {
       }}>
         <div style={{ flex: 1, height: '1px', background: 'var(--bem-gray-100)' }} />
         <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--bem-gray-400)' }}>
-          Vendeur officiel BEM
+          BEM Shop
         </span>
         <div style={{ flex: 1, height: '1px', background: 'var(--bem-gray-100)' }} />
       </div>
@@ -282,7 +282,7 @@ function OrderConfirmed({ orderId }: { orderId: string }) {
           💳 Paiement à la récupération
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
-          {['Espèces', 'Orange Money', 'Wave', 'Free Money'].map((m) => (
+          {['Orange Money', 'Wave'].map((m) => (
             <span key={m} style={{
               padding: '5px 12px', borderRadius: '20px',
               background: '#fff', border: '1px solid var(--bem-gray-100)',
@@ -338,7 +338,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
         ))}
 
         {/* Promo */}
-        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+        {/* <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
           <input
             value={promo}
             onChange={(e) => setPromo(e.target.value)}
@@ -357,7 +357,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
           }}>
             OK
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Total */}
@@ -413,7 +413,7 @@ function Summary({ subtotal, loading, error, onCheckout }: {
         </motion.button>
 
         {/* Trust */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        {/* <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           {[
             { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: 'Paiement sécurisé' },
             { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>, label: 'Retour 7 jours' },
@@ -427,15 +427,15 @@ function Summary({ subtotal, loading, error, onCheckout }: {
               {b.label}
             </div>
           ))}
-        </div>
+        </div> */}
 
-        <p style={{ textAlign: 'center', fontSize: '10px', color: 'var(--bem-gray-400)', letterSpacing: '0.05em' }}>
-          Espèces · Orange Money · Wave · Free Money
+        <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--bem-gray-400)', letterSpacing: '0.05em' }}>
+          Orange Money · Wave
         </p>
         <div style={{ padding: '12px 16px', borderRadius: '8px', background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)' }}>
           <p style={{ margin: 0, fontSize: '11px', color: 'var(--bem-gray-700)', textAlign: 'center', lineHeight: 1.6 }}>
             <span style={{ fontWeight: 700 }}>📍 Paiement à la récupération</span><br/>
-            Campus BEM · Sacré-Cœur 3, Dakar
+            Campus BEM Dakar · Sacré-Cœur 3 Pyrotechnique, Dakar
           </p>
         </div>
       </div>

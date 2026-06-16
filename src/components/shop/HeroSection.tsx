@@ -19,7 +19,7 @@ const SLIDES = [
   },
   {
     id: 2,
-    image: '/images/hero-bg1.jpg',
+    image: '/images/hero-bg1.png',
     title: 'Nouvelle Collection',
     subtitle: 'Affichez vos couleurs',
     cta: 'Voir les nouveautés',

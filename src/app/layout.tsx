@@ -4,6 +4,7 @@ import './globals.css';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import AnimatedBackground from '@/components/layout/AnimatedBackground';
 import { CartProvider } from '@/lib/CartContext';
 import { AuthProvider } from '@/lib/AuthContext';
 
@@ -55,12 +56,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${dmSans.variable} ${playfair.variable}`}>
-      <body className="font-sans">
+      <body className="font-sans" style={{ position: 'relative' }}>
+        <AnimatedBackground />
         <AuthProvider>
         <CartProvider>
           <AnnouncementBar />
           <Navbar />
-          <main>{children}</main>
+          <main style={{ position: 'relative', zIndex: 1 }}>{children}</main>
           <Footer />
         </CartProvider>
         </AuthProvider>
