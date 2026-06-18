@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -187,8 +187,7 @@ export default function OrderDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/orders/${orderId}`, {
-        headers: bearerHeader(),
+      const res = await apiFetch(`${API}/orders/${orderId}`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`${res.status}`);

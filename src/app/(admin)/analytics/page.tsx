@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { bearerHeader, tokenStorage } from '@/lib/auth';
+import { tokenStorage } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -244,12 +245,11 @@ export default function AnalyticsPage() {
   const [exporting, setExporting]     = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
-  const headers = { ...bearerHeader(), 'Content-Type':'application/json' };
 
   const fetchSummary = useCallback(async () => {
     setLoadSum(true);
     try {
-      const r = await fetch(`${API}/analytics/summary`, { headers });
+      const r = await apiFetch(`${API}/analytics/summary`);
       if (!r.ok) throw new Error();
       setSummary(await r.json());
     } catch { setError('Impossible de charger le résumé.'); }
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
   const fetchSales = useCallback(async (d:number) => {
     setLoadSale(true);
     try {
-      const r = await fetch(`${API}/analytics/sales?days=${d}`, { headers });
+      const r = await apiFetch(`${API}/analytics/sales?days=${d}`);
       if (!r.ok) throw new Error();
       setSales(normalizeSales(await r.json()));
     } catch { setSales([]); }
@@ -269,13 +269,13 @@ export default function AnalyticsPage() {
   const fetchTop = useCallback(async () => {
     setLoadTop(true);
     try {
-      const r = await fetch(`${API}/analytics/top-products?limit=10`, { headers });
+      const r = await apiFetch(`${API}/analytics/top-products?limit=10`);
       if (!r.ok) throw new Error();
       const raw:RawTopProduct[] = await r.json();
       const enriched = await Promise.all(raw.map(async (item) => {
         const quantity = item._sum?.quantity ?? 0;
         try {
-          const pr = await fetch(`${API}/products/${item.productId}`, { headers });
+          const pr = await apiFetch(`${API}/products/${item.productId}`);
           const p = pr.ok ? await pr.json() : null;
           return { productId:item.productId, quantity, name:p?.name ?? `Produit ${item.productId.slice(0,8)}…` };
         } catch { return { productId:item.productId, quantity, name:`Produit ${item.productId.slice(0,8)}…` }; }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { bearerHeader, tokenStorage } from '@/lib/auth';
+import { tokenStorage } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -37,6 +38,19 @@ type TopProduct = {
   productId: string;
   quantity: number;
   name: string;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  children?: Category[];
+};
+
+type ProductItem = {
+  id: string;
+  name: string;
+  categoryId?: string;
 };
 
 /* ── utils ──────────────────────────────────────────────────── */
@@ -338,6 +352,191 @@ function TopProductsChart({ products, loading }: { products: TopProduct[]; loadi
   );
 }
 
+/* ── filter bar ─────────────────────────────────────────────── */
+const selectStyle: React.CSSProperties = {
+  height: 36, padding: '0 32px 0 12px', borderRadius: 9,
+  border: '1.5px solid var(--bem-gray-100)',
+  backgroundColor: 'var(--bem-gray-50)', fontSize: 12, fontWeight: 500,
+  color: 'var(--bem-black)', outline: 'none', cursor: 'pointer',
+  appearance: 'none',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%239A9890' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 10px center',
+  transition: 'border-color 0.18s, box-shadow 0.18s',
+  minWidth: 160,
+};
+
+function FilterBar({
+  categories,
+  products,
+  categoryId,
+  productId,
+  loadingCats,
+  loadingProds,
+  onCategoryChange,
+  onProductChange,
+  onReset,
+}: {
+  categories: Category[];
+  products: ProductItem[];
+  categoryId: string;
+  productId: string;
+  loadingCats: boolean;
+  loadingProds: boolean;
+  onCategoryChange: (id: string) => void;
+  onProductChange: (id: string) => void;
+  onReset: () => void;
+}) {
+  const activeCount = [categoryId, productId].filter(Boolean).length;
+
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 16,
+      border: '1px solid var(--bem-gray-100)',
+      padding: '14px 20px', marginBottom: '1.5rem',
+      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+    }}>
+      {/* Label */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--bem-gray-400)" strokeWidth="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--bem-gray-400)' }}>
+          Filtres
+        </span>
+        {activeCount > 0 && (
+          <span style={{
+            fontSize: 10, fontWeight: 800,
+            padding: '2px 7px', borderRadius: 99,
+            background: 'rgba(204,31,39,0.1)', color: 'var(--bem-red)',
+          }}>
+            {activeCount} actif{activeCount > 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+
+      <div style={{ width: 1, height: 24, background: 'var(--bem-gray-100)', flexShrink: 0 }} />
+
+      {/* Category select */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', whiteSpace: 'nowrap' }}>
+          Catégorie
+        </label>
+        {loadingCats ? (
+          <div style={{ width: 160, height: 36, borderRadius: 9, background: 'var(--bem-gray-100)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+        ) : (
+          <select
+            value={categoryId}
+            onChange={(e) => onCategoryChange(e.target.value)}
+            style={{
+              ...selectStyle,
+              borderColor: categoryId ? 'var(--bem-red)' : 'var(--bem-gray-100)',
+              backgroundColor: categoryId ? 'rgba(204,31,39,0.04)' : 'var(--bem-gray-50)',
+              color: categoryId ? 'var(--bem-red)' : 'var(--bem-black)',
+            }}
+          >
+            <option value="">Toutes les catégories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Product select */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', whiteSpace: 'nowrap' }}>
+          Produit
+        </label>
+        {loadingProds ? (
+          <div style={{ width: 180, height: 36, borderRadius: 9, background: 'var(--bem-gray-100)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+        ) : (
+          <select
+            value={productId}
+            onChange={(e) => onProductChange(e.target.value)}
+            style={{
+              ...selectStyle,
+              minWidth: 180,
+              borderColor: productId ? 'var(--bem-red)' : 'var(--bem-gray-100)',
+              backgroundColor: productId ? 'rgba(204,31,39,0.04)' : 'var(--bem-gray-50)',
+              color: productId ? 'var(--bem-red)' : 'var(--bem-black)',
+            }}
+          >
+            <option value="">Tous les produits</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Reset */}
+      {activeCount > 0 && (
+        <button
+          onClick={onReset}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            height: 36, padding: '0 14px', borderRadius: 9, border: 'none',
+            background: 'rgba(204,31,39,0.08)', color: 'var(--bem-red)',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(204,31,39,0.16)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(204,31,39,0.08)')}
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Réinitialiser
+        </button>
+      )}
+
+      {/* Active filters tags */}
+      {(categoryId || productId) && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: 'auto' }}>
+          {categoryId && (
+            <FilterTag
+              label={categories.find((c) => c.id === categoryId)?.name ?? categoryId}
+              onRemove={() => onCategoryChange('')}
+            />
+          )}
+          {productId && (
+            <FilterTag
+              label={products.find((p) => p.id === productId)?.name ?? productId}
+              onRemove={() => onProductChange('')}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '3px 10px 3px 10px', borderRadius: 99,
+      background: 'var(--bem-black)', color: '#fff',
+      fontSize: 11, fontWeight: 600,
+    }}>
+      {label}
+      <button
+        onClick={onRemove}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'rgba(255,255,255,0.6)', lineHeight: 1, padding: 0,
+          display: 'flex', alignItems: 'center',
+        }}
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </span>
+  );
+}
+
 /* ── main page ──────────────────────────────────────────────── */
 export default function AnalyticsPage() {
   const [summary, setSummary]     = useState<Summary | null>(null);
@@ -353,12 +552,71 @@ export default function AnalyticsPage() {
   const [exporting, setExporting] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
-  const headers = { ...bearerHeader(), 'Content-Type': 'application/json' };
+  /* ── filters ── */
+  const [filters, setFilters] = useState({ categoryId: '', productId: '' });
+  const { categoryId, productId } = filters;
+  const [categories, setCategories]     = useState<Category[]>([]);
+  const [products, setProducts]         = useState<ProductItem[]>([]);
+  const [loadingCats, setLoadingCats]   = useState(false);
+  const [loadingProds, setLoadingProds] = useState(false);
 
-  const fetchSummary = useCallback(async () => {
+
+
+  /* ── fetch categories (once) ── */
+  const fetchCategories = useCallback(async () => {
+    setLoadingCats(true);
+    try {
+      const res = await apiFetch(`${API}/categories`);
+      if (!res.ok) return;
+      const tree: Category[] = await res.json();
+      // Flatten tree
+      const flat: Category[] = [];
+      const walk = (cats: Category[]) => {
+        for (const c of cats) {
+          flat.push(c);
+          if (c.children?.length) walk(c.children);
+        }
+      };
+      walk(tree);
+      setCategories(flat);
+    } catch {
+      // silencieux
+    } finally {
+      setLoadingCats(false);
+    }
+  }, []);
+
+  /* ── fetch products (filtered by category or all) ── */
+  const fetchProducts = useCallback(async (catId: string) => {
+    setLoadingProds(true);
+    try {
+      const url = catId
+        ? `${API}/products?limit=200&categoryId=${catId}`
+        : `${API}/products?limit=200`;
+      const res = await apiFetch(url);
+      if (!res.ok) return;
+      const json = await res.json();
+      const list: ProductItem[] = (Array.isArray(json) ? json : json.data ?? [])
+        .map((p: { id: string; name: string; categoryId?: string }) => ({
+          id: p.id,
+          name: p.name,
+          categoryId: p.categoryId,
+        }));
+      setProducts(list);
+    } catch {
+      // silencieux
+    } finally {
+      setLoadingProds(false);
+    }
+  }, []);
+
+  const fetchSummary = useCallback(async (d: number, catId: string, prodId: string) => {
     setLoadingSummary(true);
     try {
-      const res = await fetch(`${API}/analytics/summary`, { headers });
+      const params = new URLSearchParams({ days: String(d) });
+      if (catId) params.set('categoryId', catId);
+      if (prodId) params.set('productId', prodId);
+      const res = await apiFetch(`${API}/analytics/summary?${params}`);
       if (!res.ok) throw new Error(`${res.status}`);
       setSummary(await res.json());
     } catch {
@@ -368,21 +626,23 @@ export default function AnalyticsPage() {
     }
   }, []);
 
-  const fetchGrossRevenue = useCallback(async () => {
+  const fetchGrossRevenue = useCallback(async (catId: string, prodId: string) => {
     try {
-      // Première page pour connaître le nombre total de pages
-      const first = await fetch(`${API}/orders?page=1&limit=500`, { headers });
+      const filterParams = new URLSearchParams({ limit: '500' });
+      if (catId) filterParams.set('categoryId', catId);
+      if (prodId) filterParams.set('productId', prodId);
+
+      const first = await apiFetch(`${API}/orders?page=1&${filterParams}`);
       if (!first.ok) return;
       const json: OrdersApiResponse = await first.json();
 
       let total = json.data.reduce((s, o) => s + Number(o.totalAmount ?? 0), 0);
 
-      // Si plusieurs pages, on les récupère toutes en parallèle
       if (json.totalPages > 1) {
         const pages = Array.from({ length: json.totalPages - 1 }, (_, i) => i + 2);
         const results = await Promise.all(
           pages.map((p) =>
-            fetch(`${API}/orders?page=${p}&limit=500`, { headers })
+            apiFetch(`${API}/orders?page=${p}&${filterParams}`)
               .then((r) => (r.ok ? r.json() as Promise<OrdersApiResponse> : null))
           )
         );
@@ -393,14 +653,17 @@ export default function AnalyticsPage() {
 
       setGrossRevenue(total);
     } catch {
-      // silencieux : on garde null si le calcul échoue
+      // silencieux
     }
   }, []);
 
-  const fetchSales = useCallback(async (d: number) => {
+  const fetchSales = useCallback(async (d: number, catId: string, prodId: string) => {
     setLoadingSales(true);
     try {
-      const res = await fetch(`${API}/analytics/sales?days=${d}`, { headers });
+      const params = new URLSearchParams({ days: String(d) });
+      if (catId) params.set('categoryId', catId);
+      if (prodId) params.set('productId', prodId);
+      const res = await apiFetch(`${API}/analytics/sales?${params}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const raw: RawSaleRow[] = await res.json();
       setSales(normalizeSales(raw));
@@ -411,14 +674,16 @@ export default function AnalyticsPage() {
     }
   }, []);
 
-  const fetchTopProducts = useCallback(async () => {
+  const fetchTopProducts = useCallback(async (catId: string, prodId: string) => {
     setLoadingTop(true);
     try {
-      const res = await fetch(`${API}/analytics/top-products?limit=10`, { headers });
+      const params = new URLSearchParams({ limit: '10' });
+      if (catId) params.set('categoryId', catId);
+      if (prodId) params.set('productId', prodId);
+      const res = await apiFetch(`${API}/analytics/top-products?${params}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const raw: RawTopProduct[] = await res.json();
 
-      // Fetch product names in parallel
       const enriched = await Promise.all(
         raw.map(async (item) => {
           const quantity =
@@ -426,7 +691,7 @@ export default function AnalyticsPage() {
               ? (item._sum.quantity ?? 0)
               : 0;
           try {
-            const pRes = await fetch(`${API}/products/${item.productId}`, { headers });
+            const pRes = await apiFetch(`${API}/products/${item.productId}`);
             const product = pRes.ok ? await pRes.json() : null;
             return {
               productId: item.productId,
@@ -451,24 +716,44 @@ export default function AnalyticsPage() {
     }
   }, []);
 
+  /* ── load categories once ── */
   useEffect(() => {
-    fetchSummary();
-    fetchSales(days);
-    fetchTopProducts();
-    fetchGrossRevenue();
+    fetchCategories();
   }, []);
 
+  /* ── reload products list when category changes ── */
   useEffect(() => {
-    fetchSales(days);
-  }, [days]);
+    fetchProducts(categoryId);
+  }, [categoryId]);
+
+  /* ── re-fetch all analytics data when period or any filter changes ── */
+  useEffect(() => {
+    fetchSummary(days, categoryId, productId);
+    fetchSales(days, categoryId, productId);
+    fetchTopProducts(categoryId, productId);
+    fetchGrossRevenue(categoryId, productId);
+  }, [days, categoryId, productId]);
+
+  const handleCategoryChange = (id: string) => {
+    // Reset productId atomically to avoid a render with mismatched category/product
+    setFilters({ categoryId: id, productId: '' });
+  };
+
+  const handleProductChange = (id: string) => {
+    setFilters((prev) => ({ ...prev, productId: id }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({ categoryId: '', productId: '' });
+  };
 
   const handleRefresh = () => {
     setError(null);
     setLastRefresh(new Date());
-    fetchSummary();
-    fetchSales(days);
-    fetchTopProducts();
-    fetchGrossRevenue();
+    fetchSummary(days, categoryId, productId);
+    fetchSales(days, categoryId, productId);
+    fetchTopProducts(categoryId, productId);
+    fetchGrossRevenue(categoryId, productId);
   };
 
   const handleExport = async () => {
@@ -494,11 +779,12 @@ export default function AnalyticsPage() {
   };
 
   /* ── KPI data ── */
+  const hasFilter = !!(categoryId || productId);
   const kpis = [
     {
       label: 'Commandes',
       value: summary ? fmt(summary.totalOrders) : '—',
-      sub: 'Total toutes périodes',
+      sub: hasFilter ? `Période : ${days}j — filtre actif` : `Période : ${days}j`,
       color: '#2563eb',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -515,7 +801,7 @@ export default function AnalyticsPage() {
         : summary
           ? fmtRevenue(summary.totalRevenue)
           : '—',
-      sub: 'Toutes commandes confondues',
+      sub: hasFilter ? 'Filtré par catégorie / produit' : 'Toutes commandes confondues',
       color: '#16a34a',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -653,6 +939,21 @@ export default function AnalyticsPage() {
         </Appear>
       )}
 
+      {/* ── Filter bar ── */}
+      <Appear delay={80}>
+        <FilterBar
+          categories={categories}
+          products={products}
+          categoryId={categoryId}
+          productId={productId}
+          loadingCats={loadingCats}
+          loadingProds={loadingProds}
+          onCategoryChange={handleCategoryChange}
+          onProductChange={handleProductChange}
+          onReset={handleResetFilters}
+        />
+      </Appear>
+
       {/* ── KPI cards ── */}
       <div className="kpi-grid" style={{ marginBottom: '2rem' }}>
         {kpis.map((kpi, i) => (
@@ -680,6 +981,37 @@ export default function AnalyticsPage() {
                     ? `${fmtRevenue(periodRevenue)} sur ${days} jours`
                     : `${fmt(periodOrders)} commande${periodOrders > 1 ? 's' : ''} sur ${days} jours`}
                 </p>
+              )}
+              {/* Active filter pills */}
+              {(categoryId || productId) && (
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                  {categoryId && (
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700,
+                      backgroundColor: 'rgba(204,31,39,0.08)', color: 'var(--bem-red)',
+                      border: '1px solid rgba(204,31,39,0.2)',
+                    }}>
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                      </svg>
+                      {categories.find((c) => c.id === categoryId)?.name ?? 'Catégorie'}
+                    </span>
+                  )}
+                  {productId && (
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700,
+                      backgroundColor: 'rgba(204,31,39,0.08)', color: 'var(--bem-red)',
+                      border: '1px solid rgba(204,31,39,0.2)',
+                    }}>
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                      </svg>
+                      {products.find((p) => p.id === productId)?.name ?? 'Produit'}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 

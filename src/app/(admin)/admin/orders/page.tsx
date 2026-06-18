@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -103,7 +103,6 @@ export default function OrdersPage() {
   const [updatingId, setUpdatingId]   = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const headers = { ...bearerHeader(), 'Content-Type': 'application/json' };
 
   const fetchOrders = useCallback(async (pg: number, q: string, status: OrderStatus | 'ALL') => {
     setLoading(true);
@@ -112,7 +111,7 @@ export default function OrdersPage() {
       const params = new URLSearchParams({ page: String(pg), limit: String(PAGE_SIZE) });
       if (q) params.set('search', q);
       if (status !== 'ALL') params.set('status', status);
-      const res = await fetch(`${API}/orders/admin?${params.toString()}`, { headers: bearerHeader() });
+      const res = await apiFetch(`${API}/orders/admin?${params.toString()}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const json: ApiResponse = await res.json();
       setOrders(json.data ?? []);
@@ -142,9 +141,9 @@ export default function OrdersPage() {
   const handleStatusChange = async (id: string, status: OrderStatus) => {
     setUpdatingId(id);
     try {
-      const res = await fetch(`${API}/orders/${id}/status`, {
+      const res = await apiFetch(`${API}/orders/${id}/status`, {
         method: 'PATCH',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error();

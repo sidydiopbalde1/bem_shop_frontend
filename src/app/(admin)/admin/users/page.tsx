@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 const PAGE_SIZE = 20;
@@ -103,7 +103,6 @@ export default function UsersPage() {
   const [confirmSuspend, setConfirmSuspend] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const headers = { ...bearerHeader(), 'Content-Type': 'application/json' };
 
   const fetchUsers = useCallback(async (pg: number, q: string, role: Role | 'ALL') => {
     setLoading(true);
@@ -112,7 +111,7 @@ export default function UsersPage() {
       const params = new URLSearchParams({ page: String(pg), limit: String(PAGE_SIZE) });
       if (q) params.set('search', q);
       if (role !== 'ALL') params.set('role', role);
-      const res = await fetch(`${API}/users?${params.toString()}`, { headers: bearerHeader() });
+      const res = await apiFetch(`${API}/users?${params.toString()}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const json: ApiResponse = await res.json();
       setUsers(json.data ?? []);
@@ -145,9 +144,9 @@ export default function UsersPage() {
   const handleRoleChange = async (id: string, role: string) => {
     setActionId(id);
     try {
-      const res = await fetch(`${API}/users/${id}/role`, {
+      const res = await apiFetch(`${API}/users/${id}/role`, {
         method: 'PATCH',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
       });
       if (!res.ok) throw new Error();
@@ -163,7 +162,7 @@ export default function UsersPage() {
     setConfirmSuspend(null);
     setActionId(id);
     try {
-      const res = await fetch(`${API}/users/${id}/suspend`, { method: 'PATCH', headers });
+      const res = await apiFetch(`${API}/users/${id}/suspend`, { method: 'PATCH' });
       if (!res.ok) throw new Error();
     } catch {
       alert('Erreur lors de la suspension.');

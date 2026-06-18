@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -107,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const fetchUnread = async () => {
       try {
-        const res = await fetch(`${API}/contact`, { headers: bearerHeader() });
+        const res = await apiFetch(`${API}/contact`);
         if (res.ok) {
           const msgs: { read: boolean }[] = await res.json();
           setUnreadCount(msgs.filter((m) => !m.read).length);
@@ -123,7 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const fetchAlerts = async (check = false) => {
     try {
       const url = check ? '/api/notifications?check=1' : '/api/notifications';
-      const res = await fetch(url, { headers: bearerHeader() });
+      const res = await apiFetch(url);
       if (res.ok) setStockAlerts(await res.json());
     } catch {}
   };

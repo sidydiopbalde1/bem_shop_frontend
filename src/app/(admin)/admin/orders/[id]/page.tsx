@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -225,7 +225,7 @@ export default function OrderDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/orders/admin/${orderId}`, { headers: bearerHeader() });
+      const res = await apiFetch(`${API}/orders/admin/${orderId}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setOrder(data);
@@ -242,9 +242,9 @@ export default function OrderDetailPage() {
     if (!order || updating) return;
     setUpdating(true);
     try {
-      const res = await fetch(`${API}/orders/${orderId}/status`, {
+      const res = await apiFetch(`${API}/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { ...bearerHeader(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error();

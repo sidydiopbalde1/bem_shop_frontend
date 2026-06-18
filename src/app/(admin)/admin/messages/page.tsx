@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -67,7 +67,7 @@ export default function MessagesPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/contact`, { headers: bearerHeader() });
+      const res = await apiFetch(`${API}/contact`);
       if (res.ok) setMessages(await res.json());
     } finally {
       setLoading(false);
@@ -79,8 +79,8 @@ export default function MessagesPage() {
   const markRead = async (id: string) => {
     setMarking(id);
     try {
-      const res = await fetch(`${API}/contact/${id}/read`, {
-        method: 'PATCH', headers: bearerHeader(),
+      const res = await apiFetch(`${API}/contact/${id}/read`, {
+        method: 'PATCH',
       });
       if (res.ok) setMessages((prev) => prev.map((m) => m.id === id ? { ...m, read: true } : m));
     } finally {
@@ -91,8 +91,8 @@ export default function MessagesPage() {
   const remove = async (id: string) => {
     setDeleting(id);
     try {
-      const res = await fetch(`${API}/contact/${id}`, {
-        method: 'DELETE', headers: bearerHeader(),
+      const res = await apiFetch(`${API}/contact/${id}`, {
+        method: 'DELETE',
       });
       if (res.ok) {
         setMessages((prev) => prev.filter((m) => m.id !== id));

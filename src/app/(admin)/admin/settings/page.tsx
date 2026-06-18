@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
+import { FONT_OPTIONS, applyFont, type FontId } from '@/lib/FontProvider';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -213,9 +214,9 @@ function CategoryModal({
 
       const url = editing ? `${API}/categories/${editing.id}` : `${API}/categories`;
       const method = editing ? 'PATCH' : 'POST';
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { ...bearerHeader(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       if (!res.ok) {
@@ -425,7 +426,7 @@ function CategoriesSection() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/categories`, { headers: bearerHeader() });
+      const res = await apiFetch(`${API}/categories`);
       if (!res.ok) throw new Error(`${res.status}`);
       const tree: Category[] = await res.json();
       setCategories(flattenCats(tree));
@@ -446,9 +447,8 @@ function CategoriesSection() {
     if (!window.confirm(`Supprimer la catégorie "${cat.name}" ?`)) return;
     setActionId(cat.id);
     try {
-      const res = await fetch(`${API}/categories/${cat.id}`, {
+      const res = await apiFetch(`${API}/categories/${cat.id}`, {
         method: 'DELETE',
-        headers: bearerHeader(),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -564,6 +564,185 @@ function CategoriesSection() {
   );
 }
 
+/* ── Font section ───────────────────────────────────────────── */
+function FontSection() {
+  const [current, setCurrent] = useState<FontId>('arciform');
+  const [saving, setSaving] = useState<FontId | null>(null);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then(({ font }: { font: FontId }) => setCurrent(font))
+      .catch(() => {});
+  }, []);
+
+  const showToast = (msg: string, ok: boolean) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 2800);
+  };
+
+  const handleSelect = async (id: FontId) => {
+    if (id === current || saving) return;
+    setSaving(id);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ font: id }),
+      });
+      if (!res.ok) throw new Error();
+      const { font } = await res.json();
+      setCurrent(font);
+      applyFont(font);
+      showToast('Police enregistrée avec succès.', true);
+    } catch {
+      showToast('Impossible d\'enregistrer la police.', false);
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  return (
+    <Card>
+      <SectionHeader
+        title="Police du site"
+        sub="Choisissez la typographie appliquée sur l'ensemble du site"
+      />
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '10px 14px', borderRadius: 10, marginBottom: 16,
+          background: toast.ok ? 'rgba(22,163,74,0.08)' : 'rgba(204,31,39,0.07)',
+          border: `1px solid ${toast.ok ? 'rgba(22,163,74,0.25)' : 'rgba(204,31,39,0.2)'}`,
+          animation: 'fadeUp 0.2s ease',
+        }}>
+          {toast.ok ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--bem-red)" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          )}
+          <p style={{ fontSize: 12, color: toast.ok ? '#15803d' : 'var(--bem-red)', fontWeight: 500 }}>
+            {toast.msg}
+          </p>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+        {FONT_OPTIONS.map((font) => {
+          const isActive = current === font.id;
+          const isSaving = saving === font.id;
+          return (
+            <button
+              key={font.id}
+              onClick={() => handleSelect(font.id)}
+              disabled={!!saving}
+              style={{
+                position: 'relative',
+                padding: '18px 16px',
+                borderRadius: 14,
+                border: isActive
+                  ? '2px solid var(--bem-red)'
+                  : '1.5px solid var(--bem-gray-100)',
+                background: isActive ? 'rgba(204,31,39,0.04)' : '#fafaf9',
+                cursor: saving ? 'wait' : isActive ? 'default' : 'pointer',
+                textAlign: 'left',
+                transition: 'border-color 0.2s, box-shadow 0.2s, background 0.2s',
+                boxShadow: isActive ? '0 0 0 4px rgba(204,31,39,0.08)' : 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive && !saving) {
+                  e.currentTarget.style.borderColor = 'var(--bem-gray-400)';
+                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.borderColor = 'var(--bem-gray-100)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
+            >
+              {/* Active badge */}
+              {isActive && (
+                <span style={{
+                  position: 'absolute', top: 10, right: 10,
+                  width: 18, height: 18, borderRadius: '50%',
+                  background: 'var(--bem-red)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+              )}
+
+              {/* Saving spinner */}
+              {isSaving && (
+                <span style={{
+                  position: 'absolute', top: 10, right: 10,
+                  width: 16, height: 16, borderRadius: '50%',
+                  border: '2px solid var(--bem-gray-100)',
+                  borderTopColor: 'var(--bem-red)',
+                  display: 'inline-block',
+                  animation: 'spin 0.7s linear infinite',
+                }} />
+              )}
+
+              {/* Preview */}
+              <div style={{
+                fontSize: 32,
+                fontFamily: font.stack,
+                fontWeight: font.isSerif ? 700 : 500,
+                color: isActive ? 'var(--bem-red)' : 'var(--bem-black)',
+                lineHeight: 1,
+                marginBottom: 10,
+                transition: 'color 0.2s',
+              }}>
+                Aa
+              </div>
+
+              {/* Name */}
+              <p style={{
+                fontSize: 12, fontWeight: 700,
+                color: isActive ? 'var(--bem-red)' : 'var(--bem-black)',
+                marginBottom: 3,
+              }}>
+                {font.label}
+              </p>
+
+              {/* Description */}
+              <p style={{ fontSize: 10, color: 'var(--bem-gray-400)', lineHeight: 1.4 }}>
+                {font.description}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Note Arciform */}
+      <div style={{
+        marginTop: 14, padding: '10px 14px', borderRadius: 10,
+        background: 'var(--bem-gray-50)', border: '1px solid var(--bem-gray-100)',
+        display: 'flex', alignItems: 'flex-start', gap: 8,
+      }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--bem-gray-400)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 1 }}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p style={{ fontSize: 11, color: 'var(--bem-gray-400)', lineHeight: 1.5 }}>
+          Arciform est auto-hébergée — placez les fichiers <code style={{ fontFamily: 'monospace', background: 'var(--bem-gray-100)', padding: '1px 5px', borderRadius: 4 }}>arciform.woff2</code> et <code style={{ fontFamily: 'monospace', background: 'var(--bem-gray-100)', padding: '1px 5px', borderRadius: 4 }}>arciform.woff</code> dans <code style={{ fontFamily: 'monospace', background: 'var(--bem-gray-100)', padding: '1px 5px', borderRadius: 4 }}>public/fonts/</code>.
+        </p>
+      </div>
+    </Card>
+  );
+}
+
 /* ── Danger zone ────────────────────────────────────────────── */
 function DangerZone() {
   const { logout } = useAuth();
@@ -618,8 +797,9 @@ export default function SettingsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Appear delay={60}><ProfileSection /></Appear>
-        <Appear delay={140}><CategoriesSection /></Appear>
-        <Appear delay={220}><DangerZone /></Appear>
+        <Appear delay={120}><FontSection /></Appear>
+        <Appear delay={180}><CategoriesSection /></Appear>
+        <Appear delay={260}><DangerZone /></Appear>
       </div>
 
       <style>{`

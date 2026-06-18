@@ -21,6 +21,8 @@ export type User = {
 type AuthCtx = {
   user: User | null;
   loading: boolean;
+  sessionExpired: boolean;
+  clearSessionExpired: () => void;
   login:    (email: string, password: string) => Promise<string | null>;
   register: (data: RegisterData) => Promise<string | null>;
   logout:   () => Promise<void>;
@@ -61,8 +63,9 @@ async function tryRefresh(): Promise<string | null> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser]                   = useState<User | null>(null);
+  const [loading, setLoading]             = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -71,16 +74,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       let u = await fetchMe(access);
       if (!u) {
-        // access token expired — try refresh
+        // access token expiré — tentative de refresh
         access = await tryRefresh();
-        if (access) u = await fetchMe(access);
+        if (access) {
+          u = await fetchMe(access);
+        } else {
+          // refresh token également expiré ou absent
+          tokenStorage.clear();
+          setSessionExpired(true);
+        }
       }
       setUser(u);
       setLoading(false);
     })();
   }, []);
 
+  // Écoute les expirations détectées par apiFetch (requêtes pendant la session)
+  useEffect(() => {
+    const handler = () => {
+      setUser(null);
+      setSessionExpired(true);
+    };
+    window.addEventListener('bem:session-expired', handler);
+    return () => window.removeEventListener('bem:session-expired', handler);
+  }, []);
+
+  const clearSessionExpired = useCallback(() => setSessionExpired(false), []);
+
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
+    setSessionExpired(false);
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -92,12 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const { accessToken, refreshToken, user } = await res.json();
     tokenStorage.set(accessToken, refreshToken);
-    // backend returns user directly — no extra /auth/me call needed
     setUser(user ?? await fetchMe(accessToken));
     return null;
   }, []);
 
   const register = useCallback(async (data: RegisterData): Promise<string | null> => {
+    setSessionExpired(false);
     const res = await fetch(`${API}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -123,10 +145,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     tokenStorage.clear();
     setUser(null);
+    setSessionExpired(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, sessionExpired, clearSessionExpired, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

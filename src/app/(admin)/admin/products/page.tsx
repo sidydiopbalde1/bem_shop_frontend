@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 const PAGE_SIZE = 20;
@@ -144,7 +144,7 @@ function EditProductModal({
     setNewPreviews([]);
     setError(null);
     setSuccess(false);
-    fetch(`${API}/categories`, { headers: bearerHeader() })
+    apiFetch(`${API}/categories`)
       .then((r) => r.ok ? r.json() : [])
       .then((data) => {
         const list = Array.isArray(data) ? data : (data.data ?? []);
@@ -209,9 +209,9 @@ function EditProductModal({
     }
 
     try {
-      const res = await fetch(`${API}/products/${product.id}`, {
+      const res = await apiFetch(`${API}/products/${product.id}`, {
         method: 'PATCH',
-        headers: bearerHeader(),   // pas de Content-Type : le browser pose le boundary multipart
+        // pas de Content-Type : le browser pose le boundary multipart
         body: fd,
       });
       if (!res.ok) {
@@ -758,7 +758,7 @@ function AddProductModal({
     setPreviews([]);
     setError(null);
     setSuccess(false);
-    fetch(`${API}/categories`, { headers: bearerHeader() })
+    apiFetch(`${API}/categories`)
       .then((r) => r.ok ? r.json() : [])
       .then((data) => {
         const list = Array.isArray(data) ? data : (data.data ?? []);
@@ -820,9 +820,9 @@ function AddProductModal({
     form.images.forEach((file) => fd.append('images', file));
 
     try {
-      const res = await fetch(`${API}/products`, {
+      const res = await apiFetch(`${API}/products`, {
         method: 'POST',
-        headers: bearerHeader(),   // pas de Content-Type : le browser pose le boundary multipart
+        // pas de Content-Type : le browser pose le boundary multipart
         body: fd,
       });
       if (!res.ok) {
@@ -1353,9 +1353,9 @@ function ThresholdModal({
     if (!value.trim() || isNaN(threshold) || threshold < 0) return;
     setBusy(true);
     try {
-      const res = await fetch('/api/thresholds', {
+      const res = await apiFetch('/api/thresholds', {
         method: 'PUT',
-        headers: { ...bearerHeader(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id, threshold }),
       });
       if (res.ok) {
@@ -1371,9 +1371,8 @@ function ThresholdModal({
     if (!product) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/thresholds?productId=${product.id}`, {
+      const res = await apiFetch(`/api/thresholds?productId=${product.id}`, {
         method: 'DELETE',
-        headers: bearerHeader(),
       });
       if (res.ok) { onSaved(product.id, null); onClose(); }
     } finally {
@@ -1552,7 +1551,6 @@ export default function ProductsPage() {
   const [thresholdProduct, setThresholdProduct] = useState<Product | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const headers = { ...bearerHeader(), 'Content-Type': 'application/json' };
 
   const fetchProducts = useCallback(async (pg: number, q: string, pending: boolean) => {
     setLoading(true);
@@ -1562,7 +1560,7 @@ export default function ProductsPage() {
       if (q) params.set('search', q);
       if (pending) params.set('isApproved', 'false');
       const url = `${API}/products?${params.toString()}`;
-      const res = await fetch(url, { headers: bearerHeader() });
+      const res = await apiFetch(url);
       if (!res.ok) throw new Error(`${res.status}`);
       const json: ApiResponse = await res.json();
       setProducts(json.data ?? []);
@@ -1580,7 +1578,7 @@ export default function ProductsPage() {
 
   /* load thresholds once on mount */
   useEffect(() => {
-    fetch('/api/thresholds', { headers: bearerHeader() })
+    apiFetch('/api/thresholds')
       .then((r) => r.ok ? r.json() : {})
       .then((data: Record<string, number>) => setThresholds(data))
       .catch(() => {});
@@ -1613,9 +1611,9 @@ export default function ProductsPage() {
   const handleApprove = async (id: string, approve: boolean) => {
     setActionId(id);
     try {
-      const res = await fetch(`${API}/products/${id}`, {
+      const res = await apiFetch(`${API}/products/${id}`, {
         method: 'PATCH',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isApproved: approve }),
       });
       if (!res.ok) throw new Error();
@@ -1635,7 +1633,7 @@ export default function ProductsPage() {
     if (!window.confirm(`Supprimer le produit "${name}" ? Cette action est irréversible.`)) return;
     setActionId(id);
     try {
-      const res = await fetch(`${API}/products/${id}`, { method: 'DELETE', headers });
+      const res = await apiFetch(`${API}/products/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       setProducts((prev) => prev.filter((p) => p.id !== id));
       setTotal((t) => Math.max(0, t - 1));

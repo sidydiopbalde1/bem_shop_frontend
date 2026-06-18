@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, type RegisterData } from '@/lib/AuthContext';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -429,7 +429,7 @@ function OrdersSection({ onBack }: { onBack:()=>void }) {
   const fetch_ = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const r = await fetch(`${API}/orders`, { headers:bearerHeader(), credentials:'include' });
+      const r = await apiFetch(`${API}/orders`, { credentials:'include' });
       if (!r.ok) throw new Error();
       const d = await r.json();
       setOrders(Array.isArray(d) ? d : (d.data ?? []));
@@ -527,7 +527,7 @@ function ProfileSection({ onBack }: { onBack:()=>void }) {
   async function handleProfile(e: React.FormEvent) {
     e.preventDefault(); setBusy(true);
     try {
-      const r = await fetch(`${API}/auth/profile`, { method:'PATCH', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify({ firstName:form.firstName.trim(), lastName:form.lastName.trim() }) });
+      const r = await apiFetch(`${API}/auth/profile`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ firstName:form.firstName.trim(), lastName:form.lastName.trim() }) });
       if (!r.ok) throw new Error((await r.json()).message ?? 'Erreur');
       showMsg('ok', 'Profil mis à jour.');
     } catch(e:unknown) { showMsg('err', e instanceof Error ? e.message : 'Erreur'); }
@@ -539,7 +539,7 @@ function ProfileSection({ onBack }: { onBack:()=>void }) {
     if (pwForm.newPassword !== pwForm.confirmPassword) { showPwMsg('err','Les mots de passe ne correspondent pas.'); return; }
     setPwBusy(true);
     try {
-      const r = await fetch(`${API}/auth/profile`, { method:'PATCH', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify({ currentPassword:pwForm.currentPassword, newPassword:pwForm.newPassword }) });
+      const r = await apiFetch(`${API}/auth/profile`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ currentPassword:pwForm.currentPassword, newPassword:pwForm.newPassword }) });
       if (!r.ok) throw new Error((await r.json()).message ?? 'Erreur');
       showPwMsg('ok','Mot de passe modifié.');
       setPwForm({ currentPassword:'', newPassword:'', confirmPassword:'' });
@@ -661,7 +661,7 @@ function AddressesSection({ onBack }: { onBack:()=>void }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/addresses`, { headers:bearerHeader() });
+      const r = await apiFetch(`${API}/addresses`);
       if (!r.ok) throw new Error();
       setAddresses(await r.json());
     } catch { setError('Impossible de charger les adresses.'); }
@@ -671,22 +671,22 @@ function AddressesSection({ onBack }: { onBack:()=>void }) {
 
   const handleAdd = async (data: typeof ADDR_EMPTY) => {
     setFormBusy(true);
-    try { const r = await fetch(`${API}/addresses`, { method:'POST', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!r.ok) throw new Error(); setAdding(false); await load(); }
+    try { const r = await apiFetch(`${API}/addresses`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!r.ok) throw new Error(); setAdding(false); await load(); }
     catch { setError('Erreur lors de la création.'); } finally { setFormBusy(false); }
   };
   const handleEdit = async (data: typeof ADDR_EMPTY) => {
     if (!editId) return; setFormBusy(true);
-    try { const r = await fetch(`${API}/addresses/${editId}`, { method:'PATCH', headers:{...bearerHeader(),'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!r.ok) throw new Error(); setEditId(null); await load(); }
+    try { const r = await apiFetch(`${API}/addresses/${editId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!r.ok) throw new Error(); setEditId(null); await load(); }
     catch { setError('Erreur lors de la modification.'); } finally { setFormBusy(false); }
   };
   const handleDelete = async (id: string) => {
     if (!window.confirm('Supprimer cette adresse ?')) return; setActionId(id);
-    try { await fetch(`${API}/addresses/${id}`, { method:'DELETE', headers:bearerHeader() }); setAddresses(prev=>prev.filter(a=>a.id!==id)); }
+    try { await apiFetch(`${API}/addresses/${id}`, { method:'DELETE' }); setAddresses(prev=>prev.filter(a=>a.id!==id)); }
     catch { setError('Erreur lors de la suppression.'); } finally { setActionId(null); }
   };
   const handleSetDefault = async (id: string) => {
     setActionId(id);
-    try { const r = await fetch(`${API}/addresses/${id}/default`, { method:'PATCH', headers:bearerHeader() }); if (!r.ok) throw new Error(); await load(); }
+    try { const r = await apiFetch(`${API}/addresses/${id}/default`, { method:'PATCH' }); if (!r.ok) throw new Error(); await load(); }
     catch { setError('Erreur.'); } finally { setActionId(null); }
   };
 
@@ -775,7 +775,7 @@ function Dashboard() {
   const [orders, setOrders] = useState<Order[]|null>(null);
 
   useEffect(() => {
-    fetch(`${API}/orders`, { headers:bearerHeader(), credentials:'include' })
+    apiFetch(`${API}/orders`, { credentials:'include' })
       .then((r) => r.ok ? r.json() : [])
       .then((d) => setOrders(Array.isArray(d) ? d : (d.data??[])))
       .catch(() => setOrders([]));

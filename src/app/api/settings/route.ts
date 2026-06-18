@@ -1,0 +1,32 @@
+import { NextResponse } from 'next/server';
+import { readFile, writeFile } from 'fs/promises';
+import path from 'path';
+
+const SETTINGS_PATH = path.join(process.cwd(), 'data', 'settings.json');
+const DEFAULTS = { font: 'arciform' };
+const ALLOWED_FONTS = ['arciform', 'dm-sans', 'poppins', 'plus-jakarta', 'playfair'];
+
+async function readSettings(): Promise<Record<string, string>> {
+  try {
+    return JSON.parse(await readFile(SETTINGS_PATH, 'utf-8'));
+  } catch {
+    return { ...DEFAULTS };
+  }
+}
+
+export async function GET() {
+  return NextResponse.json(await readSettings());
+}
+
+export async function PUT(req: Request) {
+  const body = await req.json().catch(() => ({}));
+
+  if (body.font && !ALLOWED_FONTS.includes(body.font)) {
+    return NextResponse.json({ error: 'Police non reconnue.' }, { status: 400 });
+  }
+
+  const current = await readSettings();
+  const updated = { ...current, ...(body.font ? { font: body.font } : {}) };
+  await writeFile(SETTINGS_PATH, JSON.stringify(updated, null, 2), 'utf-8');
+  return NextResponse.json(updated);
+}

@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { CartItem } from '@/lib/types/shop.types';
 import { useCart } from '@/lib/CartContext';
 import { useAuth } from '@/lib/AuthContext';
-import { bearerHeader } from '@/lib/auth';
+import { apiFetch } from '@/lib/apiFetch';
+import { tokenStorage } from '@/lib/auth';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -465,17 +466,16 @@ export default function PanierPage() {
     setError(null);
     setLoading(true);
     try {
-      const headers = bearerHeader();
-      if (!headers.Authorization) {
+      if (!tokenStorage.getAccess()) {
         sessionStorage.setItem('redirect_after_login', '/panier');
         sessionStorage.setItem('checkout_pending', 'true');
         router.push('/compte');
         return;
       }
 
-      const res = await fetch(`${API}/orders`, {
+      const res = await apiFetch(`${API}/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...headers },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
