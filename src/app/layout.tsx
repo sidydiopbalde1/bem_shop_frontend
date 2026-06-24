@@ -9,6 +9,7 @@ import { CartProvider } from '@/lib/CartContext';
 import { AuthProvider } from '@/lib/AuthContext';
 import { FontProvider } from '@/lib/FontProvider';
 import SessionExpiredBanner from '@/components/layout/SessionExpiredBanner';
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main style={{ position: 'relative', zIndex: 1 }}>{children}</main>
           <Footer />
         </CartProvider>
+        <WhatsAppButton />
         </AuthProvider>
       </body>
     </html>

@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
 const SETTINGS_PATH = path.join(process.cwd(), 'data', 'settings.json');
-const DEFAULTS = { font: 'arciform' };
+const DEFAULTS = { font: 'arciform', whatsappNumber: '' };
 const ALLOWED_FONTS = ['arciform', 'dm-sans', 'poppins', 'plus-jakarta', 'playfair'];
 
 async function readSettings(): Promise<Record<string, string>> {
@@ -25,8 +25,19 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: 'Police non reconnue.' }, { status: 400 });
   }
 
+  if (body.whatsappNumber !== undefined) {
+    const cleaned = String(body.whatsappNumber).replace(/\D/g, '');
+    if (cleaned && cleaned.length < 6) {
+      return NextResponse.json({ error: 'Numéro WhatsApp invalide.' }, { status: 400 });
+    }
+  }
+
   const current = await readSettings();
-  const updated = { ...current, ...(body.font ? { font: body.font } : {}) };
+  const patch: Record<string, string> = {};
+  if (body.font) patch.font = body.font;
+  if (body.whatsappNumber !== undefined) patch.whatsappNumber = String(body.whatsappNumber).trim();
+
+  const updated = { ...current, ...patch };
   await writeFile(SETTINGS_PATH, JSON.stringify(updated, null, 2), 'utf-8');
   return NextResponse.json(updated);
 }
