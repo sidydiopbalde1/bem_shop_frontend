@@ -11,7 +11,7 @@ export default function SessionExpiredBanner() {
 
   const handleLogin = () => {
     clearSessionExpired();
-    router.push('/auth/login');
+    router.push('/compte');
   };
 
   return (

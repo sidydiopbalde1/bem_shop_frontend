@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Contact — BEM Dakar',
-    description: 'Contactez l\'équipe BEM Shop. Réponse sous 24–48 h ouvrées.',
+    description: 'Contactez l\'équipe BEM Shop.',
   },
 };
 

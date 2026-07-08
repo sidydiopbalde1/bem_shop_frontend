@@ -173,7 +173,7 @@ export default function ContactPage() {
             Contactez-nous
           </h1>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, maxWidth: 480 }}>
-            Une question, une suggestion, un problème de commande ? Notre équipe vous répond sous 48 h.
+            Une question, une suggestion, un problème de commande ? Notre équipe vous répond.
           </p>
         </div>
       </div>

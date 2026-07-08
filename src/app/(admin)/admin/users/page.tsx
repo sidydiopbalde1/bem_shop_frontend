@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, FormEvent } from 'react';
 import { apiFetch } from '@/lib/apiFetch';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -91,6 +91,161 @@ function SkeletonRows() {
   );
 }
 
+type CreateForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: Role;
+};
+
+const EMPTY_FORM: CreateForm = { firstName: '', lastName: '', email: '', password: '', role: 'STUDENT' };
+
+function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [form, setForm]         = useState<CreateForm>(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [showPwd, setShowPwd]   = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+
+  const set = (k: keyof CreateForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setModalError(null);
+    setSubmitting(true);
+    try {
+      const res = await apiFetch(`${API}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (res.status === 409) { setModalError('Cet email est déjà utilisé.'); return; }
+      if (!res.ok) { setModalError('Une erreur est survenue. Réessayez.'); return; }
+      onCreated();
+      onClose();
+    } catch {
+      setModalError('Impossible de joindre le serveur.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', height: 40, borderRadius: 9,
+    border: '1.5px solid var(--bem-gray-100)',
+    padding: '0 12px', fontSize: 13,
+    color: 'var(--bem-black)', outline: 'none',
+    background: '#fafafa', boxSizing: 'border-box',
+    transition: 'border-color 0.2s',
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(2px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#fff', borderRadius: 20, width: '100%', maxWidth: 480,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+          animation: 'modalIn 0.22s cubic-bezier(0.22,1,0.36,1)',
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid var(--bem-gray-100)' }}>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--bem-red)', marginBottom: 2 }}>Admin</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--bem-black)', fontFamily: 'var(--font-playfair), serif' }}>Nouvel utilisateur</h2>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid var(--bem-gray-100)', background: '#fff', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--bem-gray-400)' }}
+          >×</button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {modalError && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'rgba(204,31,39,0.07)', border: '1px solid rgba(204,31,39,0.2)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--bem-red)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <p style={{ fontSize: 12, color: 'var(--bem-red)' }}>{modalError}</p>
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Prénom *</label>
+              <input required value={form.firstName} onChange={set('firstName')} placeholder="Fatou" style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--bem-black)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--bem-gray-100)')} />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Nom *</label>
+              <input required value={form.lastName} onChange={set('lastName')} placeholder="Diallo" style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--bem-black)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--bem-gray-100)')} />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Email *</label>
+            <input required type="email" value={form.email} onChange={set('email')} placeholder="fatou@ucad.sn" style={inputStyle}
+              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--bem-black)')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--bem-gray-100)')} />
+          </div>
+
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Mot de passe *</label>
+            <div style={{ position: 'relative' }}>
+              <input required type={showPwd ? 'text' : 'password'} minLength={8} value={form.password} onChange={set('password')} placeholder="Min. 8 caractères" style={{ ...inputStyle, paddingRight: 40 }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--bem-black)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--bem-gray-100)')} />
+              <button type="button" onClick={() => setShowPwd((v) => !v)}
+                style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--bem-gray-400)', padding: 2 }}>
+                {showPwd
+                  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--bem-gray-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Rôle</label>
+            <select value={form.role} onChange={set('role')} style={{ ...inputStyle, cursor: 'pointer' }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--bem-black)')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--bem-gray-100)')}>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{ROLE_COLORS[r].label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Footer */}
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+            <button type="button" onClick={onClose} disabled={submitting}
+              style={{ padding: '0 20px', height: 40, borderRadius: 10, border: '1.5px solid var(--bem-gray-100)', background: '#fff', color: 'var(--bem-gray-700)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              Annuler
+            </button>
+            <button type="submit" disabled={submitting}
+              style={{ padding: '0 24px', height: 40, borderRadius: 10, border: 'none', background: 'var(--bem-red)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1, transition: 'opacity 0.15s' }}>
+              {submitting ? 'Création…' : 'Créer l\'utilisateur'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <style>{`@keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }`}</style>
+    </div>
+  );
+}
+
 export default function UsersPage() {
   const [users, setUsers]           = useState<User[]>([]);
   const [total, setTotal]           = useState(0);
@@ -101,6 +256,7 @@ export default function UsersPage() {
   const [error, setError]           = useState<string | null>(null);
   const [actionId, setActionId]     = useState<string | null>(null);
   const [confirmSuspend, setConfirmSuspend] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -177,6 +333,13 @@ export default function UsersPage() {
   return (
     <div className="admin-content">
 
+      {showCreate && (
+        <CreateUserModal
+          onClose={() => setShowCreate(false)}
+          onCreated={() => fetchUsers(1, search, roleFilter)}
+        />
+      )}
+
       <Appear>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
@@ -194,32 +357,53 @@ export default function UsersPage() {
             )}
           </div>
 
-          <button
-            onClick={() => fetchUsers(page, search, roleFilter)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              padding: '0 18px', height: 40, borderRadius: 10,
-              border: '1.5px solid var(--bem-gray-100)',
-              background: '#fff', color: 'var(--bem-gray-700)',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--bem-black)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--bem-gray-100)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>
-            Actualiser
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setShowCreate(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '0 18px', height: 40, borderRadius: 10,
+                border: 'none',
+                background: 'var(--bem-red)', color: '#fff',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Créer un utilisateur
+            </button>
+
+            <button
+              onClick={() => fetchUsers(page, search, roleFilter)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '0 18px', height: 40, borderRadius: 10,
+                border: '1.5px solid var(--bem-gray-100)',
+                background: '#fff', color: 'var(--bem-gray-700)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--bem-black)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--bem-gray-100)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              Actualiser
+            </button>
+          </div>
         </div>
       </Appear>
 
